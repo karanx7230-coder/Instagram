@@ -1,7 +1,8 @@
+import { API, APIpic } from "@/services/api";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
-  ImageSourcePropType,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,115 +10,50 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type StoryItem = {
-  id: string;
-  username: string;
+type ApiUser = {
+  id: number;
+  firstName: string;
+  image: string;
+  address: { city: string };
 };
 
-type PostItem = {
+type PicsumImage = {
   id: string;
-  username: string;
-  location: string;
-  profileImg: ImageSourcePropType;
-  postImg: ImageSourcePropType;
-  likes: number;
-  caption: string;
+  author: string;
+  download_url: string;
 };
-
 export default function Index() {
-  // const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<ApiUser[]>([]);
+  const [images, setImages] = useState<PicsumImage[]>([]);
 
-  // const fetchUsers = async () => {
-  //   try {
-  //     const { data } = await API.get("/users");
-  //     setUsers(data.users);
-  //   } catch {
-  //     Alert.alert("Failed");
-  //   }
-  // };
-  // useEffect(() => {
-  //   console.log(users);
-  // }, [users]);
-  // useEffect(() => {
-  //   fetchUsers();
-  // }, []);
-  const mockStories = [
-    { id: "1", username: "john_doe" },
-    { id: "2", username: "jane_smith" },
-    { id: "3", username: "cool_dev" },
-    { id: "4", username: "react_native_fan" },
-    { id: "5", username: "ui_designer" },
-    { id: "6", username: "travel_blogger" },
-    { id: "7", username: "john_doe" },
-    { id: "8", username: "jane_smith" },
-    { id: "9", username: "cool_dev" },
-    { id: "10", username: "react_native_fan" },
-    { id: "11", username: "ui_designer" },
-    { id: "12", username: "travel_blogger" },
-  ];
-  const posts = [
-    {
-      id: "1",
-      username: "joshua_l",
-      location: "Tokyo, Japan",
-      profileImg: require("../../assets/images/Inner Oval.png"),
-      postImg: require("../../assets/images/instagram.png"),
-      likes: 44686,
-      caption: "The game in Japan was amazing and I want to share some photos.",
-    },
-    {
-      id: "2",
-      username: "karennne",
-      location: "Seoul, South Korea",
-      profileImg: require("../../assets/images/Inner Oval.png"),
-      postImg: require("../../assets/images/background.png"),
-      likes: 12891,
-      caption:
-        "Beautiful evening in Seoul. The city lights look incredible tonight.",
-    },
-    {
-      id: "3",
-      username: "zackjohn",
-      location: "New York, USA",
-      profileImg: require("../../assets/images/Inner Oval.png"),
-      postImg: require("../../assets/images/logo.png"),
-      likes: 32145,
-      caption: "Working on some exciting projects. Stay tuned for updates!",
-    },
-    {
-      id: "4",
-      username: "craig_love",
-      location: "Paris, France",
-      profileImg: require("../../assets/images/Inner Oval.png"),
-      postImg: require("../../assets/images/background.png"),
-      likes: 8754,
-      caption: "Coffee, croissants and a perfect morning view in Paris.",
-    },
-    {
-      id: "5",
-      username: "kieron_d",
-      location: "London, UK",
-      profileImg: require("../../assets/images/Inner Oval.png"),
-      postImg: require("../../assets/images/instagram.png"),
-      likes: 22019,
-      caption:
-        "Weekend adventures with friends. Had an amazing time exploring the city.",
-    },
-  ];
-  const renderpost = ({ item }: { item: PostItem }) => {
+  const fetchAllData = async () => {
+    try {
+      const userResponse = await API.get("/users");
+      setUsers(userResponse.data.users);
+      const imageResponse = await APIpic.get(`/v2/list?page=7`);
+      setImages(imageResponse.data);
+    } catch (error) {
+      console.log("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+  const renderpost = ({ item, index }: { item: ApiUser; index: number }) => {
     return (
       <View>
         <View style={homestyle.postHeader}>
           <View style={homestyle.postUserInfo}>
             <Image
               resizeMode="contain"
-              source={item.profileImg}
+              source={{ uri: item.image }}
               style={homestyle.postprofileimg}
             />
 
             <TouchableOpacity style={homestyle.profileContainer}>
-              <Text style={homestyle.postUsername}>{item.username}</Text>
-              <Text style={homestyle.postLocation}>{item.location}</Text>
+              <Text style={homestyle.postUsername}>{item.firstName}</Text>
+              <Text style={homestyle.postLocation}>{item.address.city}</Text>
             </TouchableOpacity>
           </View>
 
@@ -126,10 +62,13 @@ export default function Index() {
             source={require("../../assets/images/More.png")}
           />
         </View>
-        
+
         <Image
-          resizeMode="contain"
-          source={item.postImg}
+          resizeMode="cover"
+          // resizeMode="contain"
+          source={{
+            uri: images[index]?.download_url || "https://picsum.photos/400",
+          }}
           style={homestyle.postImage}
         />
 
@@ -166,28 +105,30 @@ export default function Index() {
             style={{ height: 25, width: 25 }}
           />
           <Text>
-            Liked by {item.username} and {item.likes.toLocaleString()} others
+            Liked by {item.firstName} and {item.id} others
           </Text>
         </View>
 
         <View style={homestyle.captionContainer}>
-          <Text style={homestyle.captionText}>{item.caption}</Text>
+          <Text style={homestyle.captionText}>{item.address.city}</Text>
         </View>
       </View>
     );
   };
-  const renderStoryItem = ({ item }: { item: StoryItem }) => (
-    <View style={homestyle.storyContainer}>
-      <Image
-        resizeMode="contain"
-        source={require("../../assets/images/Inner Oval.png")}
-        style={homestyle.storyimg}
-      />
-      <Text style={homestyle.usernameText} numberOfLines={1}>
-        {item.username}
-      </Text>
-    </View>
-  );
+  const renderStoryItem = ({ item }: { item: ApiUser }) => {
+    return (
+      <View style={homestyle.storyContainer}>
+        <Image
+          resizeMode="contain"
+          source={{ uri: item.image }}
+          style={homestyle.storyimg}
+        />
+        <Text style={homestyle.usernameText} numberOfLines={1}>
+          {item.firstName}
+        </Text>
+      </View>
+    );
+  };
   return (
     <SafeAreaView style={homestyle.view}>
       <View style={homestyle.toprow}>
@@ -217,17 +158,18 @@ export default function Index() {
       <FlatList
         ListHeaderComponent={
           <FlatList
-            data={mockStories}
-            keyExtractor={(item: StoryItem) => item.id}
+            data={users}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={renderStoryItem}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={homestyle.row}
           />
         }
-        data={posts}
+        data={users}
         renderItem={renderpost}
-        keyExtractor={(item: PostItem) => item.id}
+        keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
@@ -252,7 +194,7 @@ const homestyle = StyleSheet.create({
     marginBottom: 5,
     marginHorizontal: 10,
     borderWidth: 2,
-    borderRadius: 50,
+    borderRadius: 35,
   },
   usernameText: {
     color: "grey",
@@ -310,6 +252,7 @@ const homestyle = StyleSheet.create({
 
   postImage: {
     width: "100%",
+    height: 400,
   },
 
   likesRow: {

@@ -136,7 +136,7 @@ const Loginstyle = StyleSheet.create({
   },
   passwordinput: {
     padding: 15,
-    // width: "90%",
+    width: "90%",
   },
   logo: {
     marginBottom: 50,
@@ -147,7 +147,6 @@ const Loginstyle = StyleSheet.create({
     height: 20,
     width: 20,
     alignSelf: "center",
-    
     marginVertical: 15,
   },
   forget: {

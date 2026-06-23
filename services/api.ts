@@ -6,4 +6,10 @@ export const API = axios.create({
     "Content-Type": "application/json",
   },
 });
-// https://picsum.photos/400/400?random=${id}
+export const APIpic = axios.create({
+  baseURL: "https://picsum.photos",
+  timeout: 20000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
