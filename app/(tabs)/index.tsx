@@ -31,7 +31,6 @@ export default function Index() {
   const [images, setImages] = useState<PicsumImage[]>([]);
 
   const fetchAllData = async () => {
-    
     try {
       const userResponse = await API.get("/users");
       setUsers(userResponse.data.users);
@@ -165,32 +164,40 @@ export default function Index() {
       </Pressable>
     );
   };
-
   return (
     <SafeAreaView style={homestyle.view}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
       <View style={homestyle.toprow}>
-        <Image
-          resizeMode="contain"
-          source={require("../../assets/images/Camera Icon.png")}
-          style={homestyle.iconimg}
-        />
-        <Image
-          resizeMode="contain"
-          source={require("../../assets/images/Instagram Logo.png")}
-          style={homestyle.logo}
-        />
+        <TouchableOpacity>
+          <Image
+            resizeMode="contain"
+            source={require("../../assets/images/Camera Icon.png")}
+            style={homestyle.iconimg}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Image
+            resizeMode="contain"
+            source={require("../../assets/images/Instagram Logo.png")}
+            style={homestyle.logo}
+          />
+        </TouchableOpacity>
+
         <View style={homestyle.iconRow}>
-          <Image
-            resizeMode="contain"
-            source={require("../../assets/images/IGTV.png")}
-            style={homestyle.iconimg}
-          />
-          <Image
-            resizeMode="contain"
-            source={require("../../assets/images/Messanger.png")}
-            style={homestyle.iconimg}
-          />
+          <TouchableOpacity>
+            <Image
+              resizeMode="contain"
+              source={require("../../assets/images/IGTV.png")}
+              style={homestyle.iconimg}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Image
+              resizeMode="contain"
+              source={require("../../assets/images/Messanger.png")}
+              style={homestyle.iconimg}
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -251,12 +258,11 @@ const homestyle = StyleSheet.create({
     marginLeft: 6,
     alignItems: "center",
     width: 70,
-    height: 80,
+    // height: 90,
   },
   storyimg: {
     height: 70,
     width: 70,
-    marginBottom: 5,
     alignSelf: "center",
     borderWidth: 2,
     borderColor: "white",
@@ -353,7 +359,6 @@ const homestyle = StyleSheet.create({
     width: "100%",
   },
   headerWrapper: {
-    paddingBottom: 10,
     borderBottomColor: "#cccccc",
     borderBottomWidth: 1,
   },
