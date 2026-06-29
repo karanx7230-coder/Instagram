@@ -69,7 +69,9 @@ export default function Searchuser() {
   );
   if (loading) {
     return (
-      <SafeAreaView style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+      <SafeAreaView
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
         <Text>Loading...</Text>
       </SafeAreaView>
     );

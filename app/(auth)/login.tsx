@@ -67,7 +67,10 @@ export default function Login() {
               style={Loginstyle.passwordinput}
               secureTextEntry={!passwordShown}
             />
-            <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
+            <TouchableOpacity
+              style={Loginstyle.inputimgbtn}
+              onPress={() => setPasswordShown(!passwordShown)}
+            >
               <Image
                 source={
                   passwordShown
@@ -82,7 +85,10 @@ export default function Login() {
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
-          <TouchableOpacity style={Loginstyle.loginbtn} onPress={()=>router.replace("/(tabs)")} >
+          <TouchableOpacity
+            style={Loginstyle.loginbtn}
+            onPress={() => router.replace("/(tabs)")}
+          >
             <Text style={Loginstyle.logintext}>Log in</Text>
           </TouchableOpacity>
           <View style={Loginstyle.row}>
@@ -103,6 +109,35 @@ export default function Login() {
 }
 
 const Loginstyle = StyleSheet.create({
+  password: {
+    backgroundColor: "#fafafa",
+    borderRadius: 10,
+    height: 50,
+    borderWidth: 1,
+    alignSelf: "center",
+    width: "100%",
+    marginVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  passwordinput: {
+    flex: 1,
+    paddingHorizontal: 15,
+    height: "100%",
+  },
+
+  inputimgbtn: {
+    width: 30,
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  inputimg: {
+    height: 20,
+    width: 20,
+  },
   keyboard: {
     flex: 1,
     backgroundColor: "white",
@@ -124,31 +159,13 @@ const Loginstyle = StyleSheet.create({
     borderWidth: 1,
     width: "100%",
   },
-  password: {
-    backgroundColor: "#fafafa",
-    borderRadius: 10,
-    height: 50,
-    borderWidth: 1,
-    alignSelf: "center",
-    width: "100%",
-    marginVertical: 10,
-    flexDirection: "row",
-  },
-  passwordinput: {
-    padding: 15,
-    width: "90%",
-  },
+
   logo: {
     marginBottom: 50,
     width: "100%",
     alignSelf: "center",
   },
-  inputimg: {
-    height: 20,
-    width: 20,
-    alignSelf: "center",
-    marginVertical: 15,
-  },
+
   forget: {
     color: "#3797EF",
     alignSelf: "flex-end",

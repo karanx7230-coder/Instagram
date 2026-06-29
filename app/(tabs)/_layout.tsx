@@ -42,10 +42,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="newPost"
         options={{
-          title: "addpost",
+          title: "Addpost",
           tabBarIcon: () => (
             <Image
-              source={require("../../assets/images/Add Story.png")}
+              source={require("../../assets/images/upload.png")}
               style={{
                 height: 22,
                 width: 22,

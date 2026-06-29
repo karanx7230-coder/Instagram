@@ -21,3 +21,24 @@ export const Back = () => {
     </Pressable>
   );
 };
+export const Menu = () => {
+  return (
+    <Pressable
+      style={{
+        height: 50,
+        width: 50,
+        padding: 5,
+        justifyContent: "center",
+        alignItems: "center",
+        marginHorizontal: 10,
+      }}
+      // onPress={() => router.back()}
+    >
+      <Image
+        source={require("../assets/images/Menu.png")}
+        resizeMode="contain"
+        style={{ height: 20, width: 20 }}
+      />
+    </Pressable>
+  );
+};

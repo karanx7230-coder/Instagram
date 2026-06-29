@@ -1,4 +1,4 @@
-import { API, APIpic } from "@/services/api";
+import { APIpic } from "@/services/api";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -6,7 +6,6 @@ import {
   Image,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -21,8 +20,7 @@ export default function Search() {
   const [images, setImages] = useState<PicsumImage[]>([]);
   const fetchUsers = async () => {
     try {
-      const response = await API.get("/users");
-      const imageResponse = await APIpic.get(`/v2/list?page=1&limit=100`);
+      const imageResponse = await APIpic.get(`/v2/list?page=2&limit=100`);
       setImages(imageResponse.data);
     } catch (error) {
       console.log(error);
@@ -42,7 +40,6 @@ export default function Search() {
           height: 200,
           width: "33%",
           margin: "0.6%",
-          backgroundColor: "#0000",
         }}
       />
     );

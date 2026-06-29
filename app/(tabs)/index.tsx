@@ -19,7 +19,18 @@ type ApiUser = {
   image: string;
   address: { city: string };
 };
-
+type ApiPost = {
+  id: number;
+  body: string;
+  title: string;
+  userId: number;
+  reactions: {
+    likes: number;
+    dislikes: number;
+  };
+  views: number;
+  tags: string[];
+};
 type PicsumImage = {
   id: string;
   author: string;
@@ -28,13 +39,16 @@ type PicsumImage = {
 
 export default function Index() {
   const [users, setUsers] = useState<ApiUser[]>([]);
+  const [posts, setPosts] = useState<ApiPost[]>([]);
   const [images, setImages] = useState<PicsumImage[]>([]);
 
   const fetchAllData = async () => {
     try {
       const userResponse = await API.get("/users");
       setUsers(userResponse.data.users);
-      const imageResponse = await APIpic.get(`/v2/list?page=13`);
+      const postResponse = await API.get("/posts");
+      setPosts(postResponse.data.posts);
+      const imageResponse = await APIpic.get("/v2/list?page=13");
       setImages(imageResponse.data);
     } catch (error) {
       console.log("Error fetching data:", error);
@@ -45,7 +59,10 @@ export default function Index() {
     fetchAllData();
   }, []);
 
-  const renderpost = ({ item, index }: { item: ApiUser; index: number }) => {
+  const renderpost = ({ item, index }: { item: ApiPost; index: number }) => {
+    const user = users.find((u) => u.id === item.userId);
+
+    if (!user) return null;
     return (
       <View>
         <View style={homestyle.postHeader}>
@@ -53,16 +70,14 @@ export default function Index() {
             <Image
               resizeMode="cover"
               source={{
-                uri:
-                  images[index + 3]?.download_url ||
-                  `https://picsum.photos/${index}`,
+                uri: user.image,
               }}
               style={homestyle.postprofileimg}
             />
 
             <TouchableOpacity style={homestyle.profileContainer}>
-              <Text style={homestyle.postUsername}>{item.firstName}</Text>
-              <Text style={homestyle.postLocation}>{item.address.city}</Text>
+              <Text style={homestyle.postUsername}>{user.firstName}</Text>
+              <Text style={homestyle.postLocation}>{user.address.city}</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity>
@@ -123,12 +138,19 @@ export default function Index() {
             style={homestyle.likedByAvatar}
           />
           <Text>
-            Liked by {item.firstName} and {item.id} others
+            Liked by {user.firstName} and {item.reactions.likes} others
           </Text>
         </View>
 
         <View style={homestyle.captionContainer}>
-          <Text style={homestyle.captionText}>{item.address.city}</Text>
+          <Text numberOfLines={2} style={homestyle.captionText}>
+            <Text style={{ fontWeight: "bold" }}>{user.firstName}</Text>
+            {"  "}
+            {item.body}
+          </Text>
+          <Text style={{  color: "#666", marginTop: 3 }}>
+            {item.views.toLocaleString()} views
+          </Text>
         </View>
       </View>
     );
@@ -235,7 +257,7 @@ export default function Index() {
             />
           </View>
         }
-        data={users}
+        data={posts}
         renderItem={renderpost}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
