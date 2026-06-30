@@ -2,6 +2,8 @@ import { APIpic } from "@/services/api";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Dimensions,
   FlatList,
   Image,
   StyleSheet,
@@ -16,50 +18,69 @@ type PicsumImage = {
   author: string;
   download_url: string;
 };
+
+const screenWidth = Dimensions.get("window").width;
+const imageSize = screenWidth / 3;
+
 export default function Search() {
   const [images, setImages] = useState<PicsumImage[]>([]);
-  const fetchUsers = async () => {
+  const [loading, setLoading] = useState(true);
+
+  const fetchImages = async () => {
     try {
-      const imageResponse = await APIpic.get(`/v2/list?page=2&limit=100`);
+      const imageResponse = await APIpic.get("/v2/list?page=2&limit=100");
       setImages(imageResponse.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(() => {
-    fetchUsers();
+    fetchImages();
   }, []);
-  const renderposts = ({ index }: { index: number }) => {
+
+  const renderPosts = ({ item }: { item: PicsumImage }) => {
     return (
       <Image
         resizeMode="cover"
         source={{
-          uri: images[index]?.download_url || `https://picsum.photos/${index}`,
+          uri: `https://picsum.photos/id/${item.id}/300/300`,
         }}
-        style={{
-          height: 200,
-          width: "33%",
-          margin: "0.6%",
-        }}
+        style={searchStyle.image}
       />
     );
   };
+
   return (
     <SafeAreaView style={searchStyle.container}>
-      <View>
+      <View style={searchStyle.header}>
         <TouchableOpacity
           style={searchStyle.searchInput}
           onPress={() => router.navigate("/screens/searchUser")}
         >
-          <Text style={{ color: "#888", padding: 10 }}>Search by name...</Text>
+          <Text style={searchStyle.searchText}>Search by name...</Text>
         </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <View style={searchStyle.loader}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      ) : (
         <FlatList
           data={images}
           keyExtractor={(item) => item.id}
-          renderItem={renderposts}
+          renderItem={renderPosts}
           numColumns={3}
+          initialNumToRender={12}
+          maxToRenderPerBatch={12}
+          windowSize={5}
+          removeClippedSubviews
+          showsVerticalScrollIndicator={false}
         />
-      </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -70,12 +91,33 @@ const searchStyle = StyleSheet.create({
     backgroundColor: "white",
   },
 
+  header: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+
   searchInput: {
-    flexDirection: "row",
     height: 40,
-    margin: 10,
     backgroundColor: "#f0f0f0",
     borderRadius: 8,
+    justifyContent: "center",
+  },
+
+  searchText: {
+    color: "#888",
+    paddingHorizontal: 10,
     fontSize: 16,
+  },
+
+  image: {
+    width: imageSize,
+    height: imageSize,
+    backgroundColor: "#eee",
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

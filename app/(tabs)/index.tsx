@@ -1,5 +1,7 @@
+import Homeloading from "@/Components/Skeletons/feedloading";
 import { API, APIpic } from "@/services/api";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -16,8 +18,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type ApiUser = {
   id: number;
   firstName: string;
+  lastName: string;
+  username: string;
   image: string;
-  address: { city: string };
+  address: {
+    city: string;
+    stateCode: string;
+  };
 };
 type ApiPost = {
   id: number;
@@ -41,26 +48,35 @@ export default function Index() {
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [posts, setPosts] = useState<ApiPost[]>([]);
   const [images, setImages] = useState<PicsumImage[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchAllData = async () => {
+    setLoading(true);
     try {
       const userResponse = await API.get("/users");
       setUsers(userResponse.data.users);
       const postResponse = await API.get("/posts");
       setPosts(postResponse.data.posts);
-      const imageResponse = await APIpic.get("/v2/list?page=13");
+      const imageResponse = await APIpic.get("/v2/list?page=10");
       setImages(imageResponse.data);
+      console.log(users);
+      console.log(posts);
+      console.log(images);
     } catch (error) {
       console.log("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchAllData();
   }, []);
-
+  if (loading) {
+    return <Homeloading />;
+  }
   const renderpost = ({ item, index }: { item: ApiPost; index: number }) => {
-    const user = users.find((u) => u.id === item.userId);
+    const user = users.find((u) => u.id === item.id);
 
     if (!user) return null;
     return (
@@ -76,8 +92,13 @@ export default function Index() {
             />
 
             <TouchableOpacity style={homestyle.profileContainer}>
-              <Text style={homestyle.postUsername}>{user.firstName}</Text>
-              <Text style={homestyle.postLocation}>{user.address.city}</Text>
+              <Text style={homestyle.postUsername}>
+                {user.firstName}
+                {user.lastName}
+              </Text>
+              <Text style={homestyle.postLocation}>
+                {user.address.city},{user.address.stateCode}
+              </Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity>
@@ -148,7 +169,7 @@ export default function Index() {
             {"  "}
             {item.body}
           </Text>
-          <Text style={{  color: "#666", marginTop: 3 }}>
+          <Text style={{ color: "#666", marginTop: 3 }}>
             {item.views.toLocaleString()} views
           </Text>
         </View>
@@ -156,15 +177,17 @@ export default function Index() {
     );
   };
 
-  const renderStoryItem = ({
-    item,
-    index,
-  }: {
-    item: ApiUser;
-    index: number;
-  }) => {
+  const renderStoryItem = ({ item }: { item: ApiUser }) => {
     return (
-      <Pressable style={homestyle.storyContainer}>
+      <Pressable
+        onPress={() => {
+          router.navigate({
+            pathname: "/(modals)/story",
+            params: { userId: item.id },
+          });
+        }}
+        style={homestyle.storyContainer}
+      >
         <LinearGradient
           colors={["#833ab4", "#e1306c", "#fcb045"]}
           style={homestyle.gradient}
@@ -175,7 +198,8 @@ export default function Index() {
             resizeMode="cover"
             source={{
               uri:
-                images[index]?.download_url || `https://picsum.photos/${index}`,
+                images[item.id]?.download_url ||
+                `https://picsum.photos/${item.id}`,
             }}
             style={homestyle.storyimg}
           />
@@ -197,14 +221,11 @@ export default function Index() {
             style={homestyle.iconimg}
           />
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Image
-            resizeMode="contain"
-            source={require("../../assets/images/Instagram Logo.png")}
-            style={homestyle.logo}
-          />
-        </TouchableOpacity>
-
+        <Image
+          resizeMode="contain"
+          source={require("../../assets/images/Instagram Logo.png")}
+          style={homestyle.logo}
+        />
         <View style={homestyle.iconRow}>
           <TouchableOpacity>
             <Image
@@ -244,7 +265,7 @@ export default function Index() {
                     />
                   </LinearGradient>
                   <Text style={homestyle.usernameText} numberOfLines={1}>
-                    username
+                    your story
                   </Text>
                 </TouchableOpacity>
               }
@@ -280,7 +301,6 @@ const homestyle = StyleSheet.create({
     marginLeft: 6,
     alignItems: "center",
     width: 70,
-    // height: 90,
   },
   storyimg: {
     height: 70,
@@ -344,7 +364,7 @@ const homestyle = StyleSheet.create({
   },
   postImage: {
     width: "100%",
-    height: 350,
+    height: 400,
   },
   likesRow: {
     flexDirection: "row",

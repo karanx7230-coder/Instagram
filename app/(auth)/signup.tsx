@@ -13,9 +13,11 @@ import {
   View,
 } from "react-native";
 
-export default function Login() {
+export default function Signup() {
   const [email, setEmail] = useState("");
+  const [uesrname, setUesrname] = useState("");
   const [password, setPassword] = useState("");
+  const [usernameFocused, setUsernameFocused] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
@@ -39,14 +41,14 @@ export default function Login() {
           />
           <TextInput
             placeholder="username"
-            value={email}
-            onChangeText={setEmail}
-            onFocus={() => setEmailFocused(true)}
-            onBlur={() => setEmailFocused(false)}
+            value={uesrname}
+            onChangeText={setUesrname}
+            onFocus={() => setUsernameFocused(true)}
+            onBlur={() => setUsernameFocused(false)}
             style={[
               Loginstyle.input,
               {
-                borderColor: emailFocused ? "blue" : "#b9b9b9",
+                borderColor: usernameFocused ? "blue" : "#b9b9b9",
               },
             ]}
           />
@@ -82,6 +84,19 @@ export default function Login() {
               />
             </TouchableOpacity>
           </View>
+          <TextInput
+            placeholder="username"
+            value={email}
+            onChangeText={setEmail}
+            onFocus={() => setEmailFocused(true)}
+            onBlur={() => setEmailFocused(false)}
+            style={[
+              Loginstyle.input,
+              {
+                borderColor: emailFocused ? "blue" : "#b9b9b9",
+              },
+            ]}
+          />
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
@@ -89,17 +104,14 @@ export default function Login() {
             style={Loginstyle.loginbtn}
             onPress={() => router.replace("/(tabs)")}
           >
-            <Text style={Loginstyle.logintext}>Log in</Text>
+            <Text style={Loginstyle.logintext}>Create Account</Text>
           </TouchableOpacity>
           <View style={Loginstyle.row}>
             <View style={Loginstyle.line} />
             <Text style={Loginstyle.or}>OR</Text>
             <View style={Loginstyle.line} />
           </View>
-          <Pressable
-            onPress={() => router.navigate("/(auth)/signup")}
-            style={Loginstyle.signup}
-          >
+          <Pressable style={Loginstyle.signup}>
             <Text style={Loginstyle.text1}>
               Don't have an account?
               <Text style={Loginstyle.text2}>Sign up</Text>

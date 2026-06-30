@@ -1,6 +1,5 @@
 import { Back, Menu } from "@/Components/navibtns";
 import { APIpic } from "@/services/api";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,7 +8,7 @@ type PicsumImage = {
   author: string;
   download_url: string;
 };
-export default function Profile() {
+export default function UserProfile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
 
   const [postImages, setPostImages] = useState<PicsumImage[]>([]);
@@ -23,7 +22,6 @@ export default function Profile() {
 
       setPostImages(response.data);
 
-      // Example ke liye mentions me bhi same data
       setMentionImages(response.data);
     } catch {
       console.log("error");
@@ -124,7 +122,6 @@ export default function Profile() {
                     height: 30,
                     borderColor: "#dbdbdb",
                   }}
-                  onPress={() => router.push("/screens/editprofile")}
                 >
                   <Text>Edit Profile</Text>
                 </TouchableOpacity>
