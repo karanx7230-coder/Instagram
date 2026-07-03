@@ -1,4 +1,5 @@
 import Homeloading from "@/Components/Skeletons/feedloading";
+import { Feather } from "@expo/vector-icons";
 import { API, APIpic } from "@/services/api";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -39,8 +40,6 @@ type ApiPost = {
   tags: string[];
 };
 type PicsumImage = {
-  id: string;
-  author: string;
   download_url: string;
 };
 
@@ -75,7 +74,7 @@ export default function Index() {
   if (loading) {
     return <Homeloading />;
   }
-  const renderpost = ({ item, index }: { item: ApiPost; index: number }) => {
+  const renderPost = ({ item, index }: { item: ApiPost; index: number }) => {
     const user = users.find((u) => u.id === item.id);
 
     if (!user) return null;
@@ -103,10 +102,11 @@ export default function Index() {
               <Text>Follow</Text>
             </TouchableOpacity>
             <TouchableOpacity>
-              <Image
-                resizeMode="contain"
-                source={require("../../assets/images/More.png")}
-                style={homestyles.iconimg}
+              <Feather
+                name="more-vertical"
+                size={20}
+                color="black"
+                style={{ top: 5 }}
               />
             </TouchableOpacity>
           </View>
@@ -123,11 +123,7 @@ export default function Index() {
         <View style={homestyles.postbelowrow}>
           <View style={homestyles.iconRow}>
             <TouchableOpacity>
-              <Image
-                resizeMode="contain"
-                source={require("../../assets/images/Like.png")}
-                style={homestyles.iconimg}
-              />
+              <Feather name="heart" size={24} color="black" />
             </TouchableOpacity>
 
             <TouchableOpacity>
@@ -137,7 +133,10 @@ export default function Index() {
                 style={homestyles.iconimg}
               />
             </TouchableOpacity>
-            <TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.navigate("/(tabs)/messeges")}
+            >
               <Image
                 resizeMode="contain"
                 source={require("../../assets/images/Messanger.png")}
@@ -146,11 +145,7 @@ export default function Index() {
             </TouchableOpacity>
           </View>
           <TouchableOpacity>
-            <Image
-              resizeMode="contain"
-              source={require("../../assets/images/Save.png")}
-              style={homestyles.iconimg}
-            />
+            <Feather name="bookmark" size={24} color="black" />
           </TouchableOpacity>
         </View>
 
@@ -217,11 +212,7 @@ export default function Index() {
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
       <View style={homestyles.toprow}>
         <TouchableOpacity>
-          <Image
-            resizeMode="contain"
-            source={require("../../assets/images/Add Story.png")}
-            style={homestyles.iconimg}
-          />
+          <Feather name="camera" size={24} color="black" />
         </TouchableOpacity>
         <Image
           resizeMode="contain"
@@ -229,12 +220,10 @@ export default function Index() {
           style={homestyles.logo}
         />
 
-        <TouchableOpacity onPress={() => router.navigate("/screens/notification")}>
-          <Image
-            resizeMode="contain"
-            source={require("../../assets/images/Like.png")}
-            style={homestyles.iconimg}
-          />
+        <TouchableOpacity
+          onPress={() => router.navigate("/screens/notification")}
+        >
+          <Feather name="heart" size={24} color="black" />
         </TouchableOpacity>
       </View>
 
@@ -250,16 +239,15 @@ export default function Index() {
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                   > */}
-                  <View>
+                  <View style={{ marginTop: 5 }}>
                     <Image
                       resizeMode="contain"
-                      source={{ uri: "https://picsum.photos/400" }}
+                      source={require("../../assets/images/cry.png")}
                       style={homestyles.storyimg}
                     />
-                    <Image
-                      source={require("../../assets/images/plus.png")}
-                      style={homestyles.plusIcon}
-                    />
+                    <View style={homestyles.plusIcon}>
+                      <Feather name="plus" size={12} color="white" />
+                    </View>
                   </View>
                   {/* </LinearGradient> */}
                   <Text style={homestyles.usernameText} numberOfLines={1}>
@@ -277,7 +265,7 @@ export default function Index() {
           </View>
         }
         data={posts}
-        renderItem={renderpost}
+        renderItem={renderPost}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
       />
@@ -415,9 +403,11 @@ const homestyles = StyleSheet.create({
     height: 22,
     width: 22,
     position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
     bottom: 0,
     right: 0,
-    backgroundColor: "#b5b5b5",
+    backgroundColor: "#000000",
     borderRadius: 11,
     borderWidth: 2,
     borderColor: "white",

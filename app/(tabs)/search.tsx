@@ -46,7 +46,7 @@ export default function Search() {
       <Image
         resizeMode="cover"
         source={{
-          uri: `https://picsum.photos/id/${item.id}/300/300`,
+          uri:item.download_url
         }}
         style={searchStyle.image}
       />
@@ -76,7 +76,6 @@ export default function Search() {
           numColumns={3}
           initialNumToRender={12}
           maxToRenderPerBatch={12}
-          windowSize={5}
           removeClippedSubviews
           showsVerticalScrollIndicator={false}
         />
