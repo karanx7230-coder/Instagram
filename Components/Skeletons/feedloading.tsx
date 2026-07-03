@@ -6,10 +6,7 @@ export default function Homeloading() {
       <View style={styles.toprow}>
         <View style={styles.iconimg} />
         <View style={styles.logo} />
-        <View style={styles.iconRow}>
-          <View style={styles.iconimg} />
-          <View style={styles.iconimg} />
-        </View>
+        <View style={styles.iconimg} />
       </View>
 
       <View style={styles.divider} />

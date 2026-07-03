@@ -57,11 +57,11 @@ export default function Index() {
       setUsers(userResponse.data.users);
       const postResponse = await API.get("/posts");
       setPosts(postResponse.data.posts);
-      const imageResponse = await APIpic.get("/v2/list?page=10");
+      const imageResponse = await APIpic.get("/v2/list?page=16");
       setImages(imageResponse.data);
-      console.log(users);
-      console.log(posts);
-      console.log(images);
+      // console.log(users);
+      // console.log(posts);
+      // console.log(images);
     } catch (error) {
       console.log("Error fetching data:", error);
     } finally {
@@ -81,33 +81,35 @@ export default function Index() {
     if (!user) return null;
     return (
       <View>
-        <View style={homestyle.postHeader}>
-          <View style={homestyle.postUserInfo}>
+        <View style={homestyles.postHeader}>
+          <View style={homestyles.postUserInfo}>
             <Image
               resizeMode="cover"
               source={{
-                uri: user.image,
+                uri: images[index].download_url,
               }}
-              style={homestyle.postprofileimg}
+              style={homestyles.postprofileimg}
             />
 
-            <TouchableOpacity style={homestyle.profileContainer}>
-              <Text style={homestyle.postUsername}>
-                {user.firstName}
-                {user.lastName}
-              </Text>
-              <Text style={homestyle.postLocation}>
+            <TouchableOpacity style={homestyles.profileContainer}>
+              <Text style={homestyles.postUsername}>{user.username}</Text>
+              <Text style={homestyles.postLocation}>
                 {user.address.city},{user.address.stateCode}
               </Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity>
-            <Image
-              resizeMode="contain"
-              source={require("../../assets/images/More.png")}
-              style={homestyle.iconimg}
-            />
-          </TouchableOpacity>
+          <View style={homestyles.followMoreRow}>
+            <TouchableOpacity style={homestyles.followButton}>
+              <Text>Follow</Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Image
+                resizeMode="contain"
+                source={require("../../assets/images/More.png")}
+                style={homestyles.iconimg}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Image
@@ -116,15 +118,15 @@ export default function Index() {
             uri:
               images[index]?.download_url || `https://picsum.photos/${index}`,
           }}
-          style={homestyle.postImage}
+          style={homestyles.postImage}
         />
-        <View style={homestyle.postbelowrow}>
-          <View style={homestyle.iconRow}>
+        <View style={homestyles.postbelowrow}>
+          <View style={homestyles.iconRow}>
             <TouchableOpacity>
               <Image
                 resizeMode="contain"
                 source={require("../../assets/images/Like.png")}
-                style={homestyle.iconimg}
+                style={homestyles.iconimg}
               />
             </TouchableOpacity>
 
@@ -132,14 +134,14 @@ export default function Index() {
               <Image
                 resizeMode="contain"
                 source={require("../../assets/images/Comment.png")}
-                style={homestyle.iconimg}
+                style={homestyles.iconimg}
               />
             </TouchableOpacity>
             <TouchableOpacity>
               <Image
                 resizeMode="contain"
                 source={require("../../assets/images/Messanger.png")}
-                style={homestyle.iconimg}
+                style={homestyles.iconimg}
               />
             </TouchableOpacity>
           </View>
@@ -147,29 +149,29 @@ export default function Index() {
             <Image
               resizeMode="contain"
               source={require("../../assets/images/Save.png")}
-              style={homestyle.iconimg}
+              style={homestyles.iconimg}
             />
           </TouchableOpacity>
         </View>
 
-        <View style={homestyle.likesRow}>
+        <View style={homestyles.likesRow}>
           <Image
             resizeMode="contain"
             source={require("../../assets/images/Inner Oval.png")}
-            style={homestyle.likedByAvatar}
+            style={homestyles.likedByAvatar}
           />
           <Text>
             Liked by {user.firstName} and {item.reactions.likes} others
           </Text>
         </View>
 
-        <View style={homestyle.captionContainer}>
-          <Text numberOfLines={2} style={homestyle.captionText}>
-            <Text style={{ fontWeight: "bold" }}>{user.firstName}</Text>
+        <View style={homestyles.captionContainer}>
+          <Text numberOfLines={2} style={homestyles.captionText}>
+            <Text style={homestyles.boldText}>{user.firstName}</Text>
             {"  "}
             {item.body}
           </Text>
-          <Text style={{ color: "#666", marginTop: 3 }}>
+          <Text style={homestyles.viewsText}>
             {item.views.toLocaleString()} views
           </Text>
         </View>
@@ -186,11 +188,11 @@ export default function Index() {
             params: { userId: item.id },
           });
         }}
-        style={homestyle.storyContainer}
+        style={homestyles.storyContainer}
       >
         <LinearGradient
           colors={["#833ab4", "#e1306c", "#fcb045"]}
-          style={homestyle.gradient}
+          style={homestyles.gradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
@@ -201,70 +203,66 @@ export default function Index() {
                 images[item.id]?.download_url ||
                 `https://picsum.photos/${item.id}`,
             }}
-            style={homestyle.storyimg}
+            style={homestyles.storyimg}
           />
         </LinearGradient>
-        <Text style={homestyle.usernameText} numberOfLines={1}>
-          {item.firstName}
+        <Text style={homestyles.usernameText} numberOfLines={1}>
+          {item.username}
         </Text>
       </Pressable>
     );
   };
   return (
-    <SafeAreaView style={homestyle.view}>
+    <SafeAreaView style={homestyles.view}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
-      <View style={homestyle.toprow}>
+      <View style={homestyles.toprow}>
         <TouchableOpacity>
           <Image
             resizeMode="contain"
-            source={require("../../assets/images/Camera Icon.png")}
-            style={homestyle.iconimg}
+            source={require("../../assets/images/Add Story.png")}
+            style={homestyles.iconimg}
           />
         </TouchableOpacity>
         <Image
           resizeMode="contain"
           source={require("../../assets/images/Instagram Logo.png")}
-          style={homestyle.logo}
+          style={homestyles.logo}
         />
-        <View style={homestyle.iconRow}>
-          <TouchableOpacity>
-            <Image
-              resizeMode="contain"
-              source={require("../../assets/images/IGTV.png")}
-              style={homestyle.iconimg}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              resizeMode="contain"
-              source={require("../../assets/images/Messanger.png")}
-              style={homestyle.iconimg}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      <View style={homestyle.divider} />
+        <TouchableOpacity onPress={() => router.navigate("/screens/notification")}>
+          <Image
+            resizeMode="contain"
+            source={require("../../assets/images/Like.png")}
+            style={homestyles.iconimg}
+          />
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         ListHeaderComponent={
-          <View style={homestyle.headerWrapper}>
+          <View>
             <FlatList
               ListHeaderComponent={
-                <TouchableOpacity style={homestyle.storyContainer}>
-                  <LinearGradient
+                <TouchableOpacity style={homestyles.storyContainer}>
+                  {/* <LinearGradient
                     colors={["#833ab4", "#e1306c", "#fcb045"]}
-                    style={homestyle.gradient}
+                    style={homestyles.gradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                  >
+                  > */}
+                  <View>
                     <Image
                       resizeMode="contain"
                       source={{ uri: "https://picsum.photos/400" }}
-                      style={homestyle.storyimg}
+                      style={homestyles.storyimg}
                     />
-                  </LinearGradient>
-                  <Text style={homestyle.usernameText} numberOfLines={1}>
+                    <Image
+                      source={require("../../assets/images/plus.png")}
+                      style={homestyles.plusIcon}
+                    />
+                  </View>
+                  {/* </LinearGradient> */}
+                  <Text style={homestyles.usernameText} numberOfLines={1}>
                     your story
                   </Text>
                 </TouchableOpacity>
@@ -274,7 +272,7 @@ export default function Index() {
               renderItem={renderStoryItem}
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={homestyle.row}
+              contentContainerStyle={homestyles.row}
             />
           </View>
         }
@@ -287,7 +285,7 @@ export default function Index() {
   );
 }
 
-const homestyle = StyleSheet.create({
+const homestyles = StyleSheet.create({
   view: {
     flex: 1,
     backgroundColor: "white",
@@ -300,16 +298,16 @@ const homestyle = StyleSheet.create({
   storyContainer: {
     marginLeft: 6,
     alignItems: "center",
-    width: 70,
+    width: 86,
   },
   storyimg: {
-    height: 70,
-    width: 70,
+    height: 80,
+    width: 80,
     alignSelf: "center",
     borderWidth: 2,
     borderColor: "white",
     backgroundColor: "white",
-    borderRadius: 35,
+    borderRadius: 40,
   },
   usernameText: {
     color: "grey",
@@ -381,10 +379,10 @@ const homestyle = StyleSheet.create({
     lineHeight: 18,
   },
   gradient: {
-    height: 74,
-    width: 74,
-    borderRadius: 38,
-    padding: 2,
+    height: 86,
+    width: 86,
+    borderRadius: 45,
+    padding: 3,
   },
   iconRow: {
     flexDirection: "row",
@@ -394,14 +392,34 @@ const homestyle = StyleSheet.create({
     height: 25,
     width: 25,
   },
-  divider: {
-    height: 1,
-    marginTop: 5,
-    backgroundColor: "#c0c0c0",
-    width: "100%",
+  followMoreRow: {
+    flexDirection: "row",
   },
-  headerWrapper: {
-    borderBottomColor: "#cccccc",
-    borderBottomWidth: 1,
+  followButton: {
+    marginHorizontal: 10,
+    paddingHorizontal: 15,
+    height: 30,
+    backgroundColor: "#e9e9e9",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 5,
+  },
+  boldText: {
+    fontWeight: "bold",
+  },
+  viewsText: {
+    color: "#666",
+    marginTop: 3,
+  },
+  plusIcon: {
+    height: 22,
+    width: 22,
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#b5b5b5",
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "white",
   },
 });

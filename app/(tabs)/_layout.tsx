@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Image } from "react-native";
+import { Image, StyleSheet } from "react-native";
 
 export default function RootLayout() {
   return (
@@ -7,6 +7,7 @@ export default function RootLayout() {
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
+        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: "#ffffff",
           height: 75,
@@ -16,12 +17,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "home",
           tabBarIcon: () => (
             <Image
               source={require("../../assets/images/Home.png")}
-              style={{ height: 22, width: 22 }}
-              resizeMode="contain"
+              style={style.img}
             />
           ),
         }}
@@ -29,41 +28,32 @@ export default function RootLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: "Search",
           tabBarIcon: () => (
             <Image
               source={require("../../assets/images/Search.png")}
-              style={{ height: 22, width: 22 }}
-              resizeMode="contain"
+              style={style.img}
             />
           ),
         }}
       />
       <Tabs.Screen
-        name="newPost"
+        name="reel"
         options={{
-          title: "Addpost",
           tabBarIcon: () => (
             <Image
-              source={require("../../assets/images/upload.png")}
-              style={{
-                height: 22,
-                width: 22,
-              }}
-              resizeMode="contain"
+              source={require("../../assets/images/reel.png")}
+              style={style.img}
             />
           ),
         }}
       />
       <Tabs.Screen
-        name="notification"
+        name="messeges"
         options={{
-          title: "Notifiaction",
           tabBarIcon: () => (
             <Image
-              source={require("../../assets/images/Like.png")}
-              style={{ height: 22, width: 22 }}
-              resizeMode="contain"
+              source={require("../../assets/images/Messanger.png")}
+              style={style.img}
             />
           ),
         }}
@@ -71,12 +61,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
           tabBarIcon: () => (
             <Image
-              source={require("../../assets/images/Inner Oval.png")}
-              style={{ height: 22, width: 22 }}
-              resizeMode="contain"
+              source={require("../../assets/images/profile.png")}
+              style={style.img}
             />
           ),
         }}
@@ -84,3 +72,10 @@ export default function RootLayout() {
     </Tabs>
   );
 }
+const style = StyleSheet.create({
+  img: {
+    height: 22,
+    width: 22,
+    resizeMode: "contain",
+  },
+});
