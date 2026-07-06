@@ -1,6 +1,6 @@
 import Homeloading from "@/Components/Skeletons/feedloading";
-import { Feather } from "@expo/vector-icons";
 import { API, APIpic } from "@/services/api";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -208,11 +208,11 @@ export default function Index() {
     );
   };
   return (
-    <SafeAreaView style={homestyles.view}>
+    <SafeAreaView style={homestyles.view} edges={["top"]}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
       <View style={homestyles.toprow}>
         <TouchableOpacity>
-          <Feather name="camera" size={24} color="black" />
+          <Feather name="plus" size={24} color="black" />
         </TouchableOpacity>
         <Image
           resizeMode="contain"
@@ -268,6 +268,7 @@ export default function Index() {
         renderItem={renderPost}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 70 }}
       />
     </SafeAreaView>
   );

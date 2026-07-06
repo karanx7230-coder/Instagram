@@ -2,14 +2,14 @@ import { APIpic } from "@/services/api";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -54,7 +54,7 @@ export default function Search() {
   };
 
   return (
-    <SafeAreaView style={searchStyle.container}>
+    <SafeAreaView style={searchStyle.container} edges={["top"]}>
       <View style={searchStyle.header}>
         <TouchableOpacity
           style={searchStyle.searchInput}
@@ -78,6 +78,7 @@ export default function Search() {
           maxToRenderPerBatch={12}
           removeClippedSubviews
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 70 }}
         />
       )}
     </SafeAreaView>

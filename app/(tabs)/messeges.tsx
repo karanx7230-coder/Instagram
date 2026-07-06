@@ -1,15 +1,15 @@
 import { API, APIpic } from "@/services/api";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -77,12 +77,12 @@ export default function Messseges() {
     return (
       <TouchableOpacity style={messegestyles.messageRow}>
         <View style={messegestyles.messageLeft}>
-          <View>
+          <TouchableOpacity onPress={() => router.back}>
             <Image
               source={{ uri: images[index]?.download_url }}
               style={messegestyles.messageAvatar}
             />
-          </View>
+          </TouchableOpacity>
           <View>
             <Text style={messegestyles.messageUsername}>{item.username}</Text>
             <Text style={messegestyles.messageActiveTime}>active time ago</Text>
@@ -93,7 +93,7 @@ export default function Messseges() {
     );
   };
   return (
-    <SafeAreaView style={messegestyles.container}>
+    <SafeAreaView style={messegestyles.container} edges={["top"]}>
       <View style={messegestyles.header}>
         <View style={messegestyles.headerLeft}>
           <Image
@@ -169,6 +169,7 @@ export default function Messseges() {
         }
         renderItem={rendermessege}
         showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 70 }}
       />
     </SafeAreaView>
   );

@@ -1,8 +1,9 @@
 import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Homeloading() {
   return (
-    <View style={styles.view}>
+    <SafeAreaView style={styles.view}>
       <View style={styles.toprow}>
         <View style={styles.iconimg} />
         <View style={styles.logo} />
@@ -72,7 +73,7 @@ export default function Homeloading() {
         <View style={styles.captionLine} />
         <View style={[styles.captionLine, { width: "60%" }]} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   iconimg: {
     height: 25,
     width: 25,
-    borderRadius: 22,
+    borderRadius: 11,
     backgroundColor: "#dcdcdc",
   },
   logo: {

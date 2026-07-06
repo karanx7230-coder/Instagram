@@ -10,16 +10,20 @@ export default function RootLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: "#ffffff",
+          height: 60,
+          borderTopWidth: 0.4,
+          borderTopColor: "#d9d9d9",
+          paddingTop: 8,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Home.png")}
-              style={style.img}
+              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
             />
           ),
         }}
@@ -27,10 +31,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Search.png")}
-              style={style.img}
+              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
             />
           ),
         }}
@@ -38,10 +42,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="reel"
         options={{
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/reel.png")}
-              style={style.img}
+              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
             />
           ),
         }}
@@ -49,10 +53,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="messeges"
         options={{
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Messanger.png")}
-              style={style.img}
+              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
             />
           ),
         }}
@@ -60,10 +64,13 @@ export default function RootLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused }) => (
             <Image
-              source={require("../../assets/images/profile.png")}
-              style={style.img}
+              source={require("../../assets/images/cry.png")}
+              style={[
+                style.img,
+                { borderRadius: 11, opacity: focused ? 1 : 0.75 },
+              ]}
             />
           ),
         }}
