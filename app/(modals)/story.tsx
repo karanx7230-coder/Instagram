@@ -1,7 +1,13 @@
 import { API, APIpic } from "@/services/api";
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  PanResponder,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ApiUser = {
@@ -50,6 +56,17 @@ export default function Story() {
       fetchStoryData();
     }
   }, [userId]);
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 100) {
+          router.back();
+        }
+      },
+    }),
+  ).current;
 
   if (loading) {
     return (
@@ -62,7 +79,10 @@ export default function Story() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#000" }}
+      {...panResponder.panHandlers}
+    >
       {storyImage && (
         <Image
           source={{ uri: storyImage }}

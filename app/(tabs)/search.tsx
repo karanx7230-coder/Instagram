@@ -46,7 +46,7 @@ export default function Search() {
       <Image
         resizeMode="cover"
         source={{
-          uri:item.download_url
+          uri: item.download_url,
         }}
         style={searchStyle.image}
       />

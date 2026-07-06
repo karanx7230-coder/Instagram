@@ -10,7 +10,6 @@ export default function RootLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: "#ffffff",
-          height: 75,
         },
       }}
     >

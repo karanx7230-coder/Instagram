@@ -1,4 +1,10 @@
+import { API } from "@/services/api";
+import { Feather } from "@expo/vector-icons";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useEffect, useState } from "react";
 import {
+  Dimensions,
+  FlatList,
   Image,
   ImageBackground,
   StyleSheet,
@@ -7,131 +13,161 @@ import {
   View,
 } from "react-native";
 
-export default function NewPost() {
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+
+type ApiUser = {
+  id: string;
+  username: string;
+};
+
+export default function Reel() {
+  const [user, setUser] = useState<ApiUser[]>([]);
+  const tabBarHeight = useBottomTabBarHeight();
+  const fetchAllData = async () => {
+    try {
+      const userResponse = await API.get("/users");
+      setUser(userResponse.data.users);
+      // const postResponse = await API.get("/posts");
+      // setPosts(postResponse.data.posts);
+      // const imageResponse = await APIpic.get("/v2/list?page=16");
+      // setImages(imageResponse.data);
+    } catch (error) {
+      console.log("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const renderReel = ({ item }: { item: ApiUser }) => (
+    <ImageBackground
+      source={{ uri: `https://picsum.photos/600/600?.random=${item.id}` }}
+      style={[styles.page, { height: SCREEN_HEIGHT - tabBarHeight }]}
+    >
+      <View style={styles.sideIcons}>
+        <TouchableOpacity>
+          <Feather name="heart" size={35} color={"white"} />
+          <Text style={styles.iconText}>34</Text>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Image
+            source={require("../../assets/images/Comment.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.iconText}>43</Text>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Image
+            source={require("../../assets/images/Messanger.png")}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Image
+            source={require("../../assets/images/Save.png")}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Image
+            source={require("../../assets/images/More.png")}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.bottomInfo}>
+        <View style={styles.userRow}>
+          <Image
+            style={styles.avatar}
+            source={require("../../assets/images/cry.png")}
+          />
+          <Text style={styles.username}>{item.username}</Text>
+          <TouchableOpacity style={styles.followBtn}>
+            <Text style={styles.followText}>Follow</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.caption}>
+          Excepteur reprehenderit cillum aliquip ad enim Lorem labore mollit
+          consequat elit est fugiat ut amet.
+        </Text>
+      </View>
+    </ImageBackground>
+  );
+
   return (
-    <View style={reelstyles.view}>
-      <ImageBackground
-        source={require("../../assets/images/mr.png")}
-        style={reelstyles.ImageBackground}
-      >
-        <View style={reelstyles.sideIconsContainer}>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/Like.png")}
-              style={reelstyles.iconimg}
-            />
-            <Text>34</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/Comment.png")}
-              style={reelstyles.iconimg}
-            />
-            <Text>43</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/Messanger.png")}
-              style={reelstyles.iconimg}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/Save.png")}
-              style={reelstyles.iconimg}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/More.png")}
-              style={reelstyles.iconimg}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/Rectangle.png")}
-              style={[reelstyles.iconimg, reelstyles.rectangleImg]}
-            />
-          </TouchableOpacity>
-        </View>
-        <View>
-          <View style={reelstyles.userRow}>
-            <Image
-              style={reelstyles.avatarImg}
-              source={require("../../assets/images/cry.png")}
-            />
-            <Text style={reelstyles.usernameText}>username</Text>
-            <TouchableOpacity style={reelstyles.followButton}>
-              <Text style={reelstyles.followText}>Follow</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={reelstyles.captionText}>
-            Excepteur reprehenderit cillum aliquip ad enim Lorem labore mollit
-            consequat elit est fugiat ut amet.
-          </Text>
-        </View>
-      </ImageBackground>
-    </View>
+    <FlatList
+      data={user}
+      keyExtractor={(item) => item.id}
+      renderItem={renderReel}
+      showsVerticalScrollIndicator={false}
+      pagingEnabled
+      initialNumToRender={3}
+      maxToRenderPerBatch={2}
+      // snapToInterval={SCREEN_HEIGHT - tabBarHeight - insets.bottom}
+      // getItemLayout={(_, index) => ({
+      //   length: SCREEN_HEIGHT - tabBarHeight - insets.bottom,
+      //   offset: (SCREEN_HEIGHT - tabBarHeight - insets.bottom) * index,
+      //   index,
+      // })}
+      // contentContainerStyle={{ paddingBottom: tabBarHeight + insets.bottom }}
+    />
   );
 }
 
-const reelstyles = StyleSheet.create({
-  view: {
-    flex: 1,
-  },
-  ImageBackground: {
-    position: "absolute",
-    height: "100%",
+const styles = StyleSheet.create({
+  page: {
     width: "100%",
-    marginBottom: 75,
     justifyContent: "flex-end",
   },
-  iconimg: {
+  icon: {
+    tintColor: "white",
     height: 35,
     width: 35,
     resizeMode: "contain",
   },
-  sideIconsContainer: {
-    position: "absolute",
-    alignItems: "flex-end",
-    right: 15,
-    gap: 20,
+  iconText: {
+    color: "white",
+    textAlign: "center",
   },
-  rectangleImg: {
-    borderColor: "white",
-    borderWidth: 2,
-    borderRadius: 5,
+  sideIcons: {
+    position: "absolute",
+    right: 15,
+    bottom: 20,
+    gap: 20,
+    alignItems: "center",
+  },
+  bottomInfo: {
+    paddingBottom: 30,
   },
   userRow: {
     flexDirection: "row",
     alignItems: "center",
     padding: 20,
   },
-  avatarImg: {
+  avatar: {
     height: 42,
     width: 42,
     borderRadius: 21,
-    resizeMode: "contain",
   },
-  usernameText: {
+  username: {
     color: "white",
-    marginHorizontal: 20,
-  },
-  followButton: {
     marginHorizontal: 10,
+    fontWeight: "600",
+  },
+  followBtn: {
     paddingHorizontal: 15,
     height: 30,
     backgroundColor: "#ffffff36",
-    alignItems: "center",
     justifyContent: "center",
     borderRadius: 5,
   },
   followText: {
     color: "white",
   },
-  captionText: {
-    paddingBottom: 20,
-    left: 20,
+  caption: {
+    paddingHorizontal: 20,
     color: "white",
     width: "90%",
   },
