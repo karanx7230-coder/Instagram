@@ -35,7 +35,7 @@ export default function Comments() {
   const handleSheetChange = useCallback((index: number) => {
     if (index === -1) router.back();
   }, []);
- 
+
   return (
     <BottomSheet
       index={0}
