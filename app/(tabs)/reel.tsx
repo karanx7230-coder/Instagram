@@ -153,6 +153,7 @@ export default function Reel() {
       pagingEnabled
       initialNumToRender={3}
       maxToRenderPerBatch={2}
+      windowSize={3}
       disableIntervalMomentum={true}
     />
   );

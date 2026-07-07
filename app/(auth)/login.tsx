@@ -1,6 +1,9 @@
+import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -19,7 +22,44 @@ export default function Login() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
+  const [loading, setLoading] = useState(false);
+  async function handleLogin() {
+    if (!email || !password) {
+      Alert.alert("Missing fields", "Please enter email and password.");
+      return;
+    }
 
+    console.log("=== LOGIN ATTEMPT ===");
+    console.log("EMAIL VALUE:", JSON.stringify(email));
+    console.log("PASSWORD VALUE:", JSON.stringify(password));
+
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+
+    console.log("LOGIN DATA:", JSON.stringify(data));
+    console.log("LOGIN ERROR:", JSON.stringify(error));
+
+    if (error) {
+      Alert.alert("Login failed", error.message);
+      return;
+    }
+
+    console.log("LOGIN SUCCESS - USER:", JSON.stringify(data.user));
+    console.log("LOGIN SUCCESS - SESSION:", JSON.stringify(data.session));
+
+    router.replace("/(tabs)");
+  }
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={"large"} color={"blue"} />
+      </View>
+    );
+  }
   return (
     <KeyboardAvoidingView
       style={Loginstyle.keyboard}
@@ -38,7 +78,7 @@ export default function Login() {
             style={Loginstyle.logo}
           />
           <TextInput
-            placeholder="username"
+            placeholder="EMAIL"
             value={email}
             onChangeText={setEmail}
             onFocus={() => setEmailFocused(true)}
@@ -85,10 +125,7 @@ export default function Login() {
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
-          <TouchableOpacity
-            style={Loginstyle.loginbtn}
-            onPress={() => router.replace("/(tabs)")}
-          >
+          <TouchableOpacity style={Loginstyle.loginbtn} onPress={handleLogin}>
             <Text style={Loginstyle.logintext}>Log in</Text>
           </TouchableOpacity>
           <View style={Loginstyle.row}>

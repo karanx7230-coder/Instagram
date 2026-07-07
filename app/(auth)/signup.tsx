@@ -1,6 +1,8 @@
+import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +17,66 @@ import {
 
 export default function Signup() {
   const [email, setEmail] = useState("");
-  const [uesrname, setUesrname] = useState("");
+  const [username, setUesrname] = useState("");
   const [password, setPassword] = useState("");
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSignUp() {
+    if (!email || !password || !username) {
+      Alert.alert("Missing fields", "Please fill everything in.");
+      return;
+    }
+    setLoading(true);
+
+    // check username uniqueness
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("username", username)
+      .maybeSingle();
+
+    if (existing) {
+      setLoading(false);
+      Alert.alert("Username taken", "Try another username.");
+      return;
+    }
+
+    // const { data, error } = await supabase.auth.signUp({ email, password });
+    console.log("EMAIL VALUE:", JSON.stringify(email));
+    console.log("PASSWORD VALUE:", JSON.stringify(password));
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
+    console.log("SIGNUP DATA:", JSON.stringify(data));
+    if (error) {
+      setLoading(false);
+      Alert.alert("Signup failed", error.message);
+      console.log(error.message);
+
+      return;
+    }
+
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({ id: data.user.id, username });
+
+      if (profileError) {
+        setLoading(false);
+        Alert.alert("Profile creation failed", profileError.message);
+        return;
+      }
+    }
+
+    setLoading(false);
+    router.replace("/(tabs)");
+  }
 
   return (
     <KeyboardAvoidingView
@@ -41,7 +97,7 @@ export default function Signup() {
           />
           <TextInput
             placeholder="username"
-            value={uesrname}
+            value={username}
             onChangeText={setUesrname}
             onFocus={() => setUsernameFocused(true)}
             onBlur={() => setUsernameFocused(false)}
@@ -85,7 +141,7 @@ export default function Signup() {
             </TouchableOpacity>
           </View>
           <TextInput
-            placeholder="username"
+            placeholder="email"
             value={email}
             onChangeText={setEmail}
             onFocus={() => setEmailFocused(true)}
@@ -100,10 +156,7 @@ export default function Signup() {
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
-          <TouchableOpacity
-            style={Loginstyle.loginbtn}
-            onPress={() => router.replace("/(tabs)")}
-          >
+          <TouchableOpacity style={Loginstyle.loginbtn} onPress={handleSignUp}>
             <Text style={Loginstyle.logintext}>Create Account</Text>
           </TouchableOpacity>
           <View style={Loginstyle.row}>
