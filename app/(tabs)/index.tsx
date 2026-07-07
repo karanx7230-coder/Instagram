@@ -126,7 +126,14 @@ export default function Index() {
               <Feather name="heart" size={24} color="black" />
             </TouchableOpacity>
 
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                router.navigate({
+                  pathname: "/(modals)/comments",
+                  params: { userId: item.id },
+                });
+              }}
+            >
               <Image
                 resizeMode="contain"
                 source={require("../../assets/images/Comment.png")}
