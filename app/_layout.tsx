@@ -48,6 +48,12 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="screens"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
           name="(modals)"
           options={{ presentation: "transparentModal" }}
         />

@@ -141,9 +141,7 @@ export default function Index() {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => router.navigate("/(tabs)/messeges")}
-            >
+            <TouchableOpacity>
               <Image
                 resizeMode="contain"
                 source={require("../../assets/images/Messanger.png")}

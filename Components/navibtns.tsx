@@ -1,3 +1,4 @@
+import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Image, Pressable, Text, TouchableOpacity, View } from "react-native";
 
@@ -14,16 +15,14 @@ export const Back = () => {
       }}
       onPress={() => router.back()}
     >
-      <Image
-        source={require("../assets/images/Back.png")}
-        resizeMode="contain"
-      />
+      <Feather name="arrow-left" size={24} color="black" />
     </Pressable>
   );
 };
 export const Menu = () => {
   return (
     <Pressable
+      onPress={() => router.push("/screens/setting")}
       style={{
         height: 50,
         width: 50,
@@ -32,13 +31,8 @@ export const Menu = () => {
         alignItems: "center",
         marginHorizontal: 10,
       }}
-      // onPress={() => router.back()}
     >
-      <Image
-        source={require("../assets/images/Menu.png")}
-        resizeMode="contain"
-        style={{ height: 20, width: 20 }}
-      />
+      <Feather name="menu" size={24} color="black" />
     </Pressable>
   );
 };
