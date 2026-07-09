@@ -1,5 +1,6 @@
 import Homeloading from "@/Components/Skeletons/feedloading";
 import { API, APIpic } from "@/services/api";
+import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -42,9 +43,17 @@ type ApiPost = {
 type PicsumImage = {
   download_url: string;
 };
-
+type You = {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  bio: string;
+  avatar_url: string;
+};
 export default function Index() {
   const [users, setUsers] = useState<ApiUser[]>([]);
+  const [you, setYou] = useState<You | any>([]);
   const [posts, setPosts] = useState<ApiPost[]>([]);
   const [images, setImages] = useState<PicsumImage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,7 +76,31 @@ export default function Index() {
       setLoading(false);
     }
   };
+  const fetchuser = async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      const userresponse = data.user;
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, full_name, bio, avatar_url")
+        .eq("id", userresponse?.id)
+        .single();
+
+      setYou({
+        ...userresponse,
+        username: profile?.username,
+        name: profile?.full_name,
+        bio: profile?.bio,
+        avatar_url: profile?.avatar_url,
+      });
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+  useEffect(() => {
+    fetchuser();
+  }, []);
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -216,7 +249,7 @@ export default function Index() {
     <SafeAreaView style={homestyles.view} edges={["top"]}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
       <View style={homestyles.toprow}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=>router.navigate("/screens/addPost")}>
           <Feather name="plus" size={24} color="black" />
         </TouchableOpacity>
         <Image
@@ -247,7 +280,11 @@ export default function Index() {
                   <View style={{ marginTop: 5 }}>
                     <Image
                       resizeMode="contain"
-                      source={require("../../assets/images/cry.png")}
+                      source={
+                        you.avatar_url
+                          ? { uri: you.avatar_url }
+                          : require("../../assets/images/cry.png")
+                      }
                       style={homestyles.storyimg}
                     />
                     <View style={homestyles.plusIcon}>

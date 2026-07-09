@@ -28,6 +28,15 @@ export default function ModalsLayout() {
         }}
       />
       <Stack.Screen name="searchUser" />
+      <Stack.Screen
+        name="addPost"
+        options={{
+          title: "Add a new post",
+          headerTitleStyle: { fontSize: 18, fontWeight: "bold" },
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: "white" },
+        }}
+      />
       <Stack.Screen name="userprofile" />
     </Stack>
   );

@@ -1,5 +1,6 @@
 import { Back, Menu } from "@/Components/navibtns";
 import { APIpic } from "@/services/api";
+import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -17,11 +18,19 @@ type PicsumImage = {
   author: string;
   download_url: string;
 };
-
+type User = {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  bio: string;
+  avatar_url: string;
+};
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
   const [postImages, setPostImages] = useState<PicsumImage[]>([]);
   const [mentionImages, setMentionImages] = useState<PicsumImage[]>([]);
+  const [user, setUser] = useState<User | any>([]);
   const currentData = activeTab === "posts" ? postImages : mentionImages;
   const fetchimage = async () => {
     try {
@@ -32,6 +41,32 @@ export default function Profile() {
       console.log("error");
     }
   };
+  const fetchuser = async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      const userresponse = data.user;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, full_name, bio, avatar_url")
+        .eq("id", userresponse?.id)
+        .single();
+
+      setUser({
+        ...userresponse,
+        username: profile?.username,
+        name: profile?.full_name,
+        bio: profile?.bio,
+        avatar_url: profile?.avatar_url,
+      });
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchuser();
+  }, []);
   useEffect(() => {
     fetchimage();
   }, []);
@@ -43,42 +78,72 @@ export default function Profile() {
             <View>
               <View style={profilestyles.topNav}>
                 <Back />
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    alignSelf: "center",
+                  }}
+                >
+                  {user.username}
+                  {/* {user.email} */}
+                </Text>
+
                 <Menu />
               </View>
               <View style={profilestyles.profileSection}>
                 <View style={profilestyles.avatarStatsRow}>
                   <TouchableOpacity style={profilestyles.avatarBorder}>
                     <Image
-                      source={require("../../assets/images/cry.png")}
+                      source={
+                        user.avatar_url
+                          ? { uri: user.avatar_url }
+                          : require("../../assets/images/cry.png")
+                      }
                       style={profilestyles.avatarImage}
                       resizeMode="contain"
                     />
                   </TouchableOpacity>
-                  <View style={profilestyles.statsRow}>
-                    <View>
-                      <Text>59</Text>
-                      <Text>followers</Text>
-                    </View>
-                    <View>
-                      <Text>59</Text>
-                      <Text>followers</Text>
-                    </View>
-                    <View>
-                      <Text>59</Text>
-                      <Text>followers</Text>
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "600",
+                        margin: 10,
+                        marginLeft: 20,
+                      }}
+                    >
+                      {user?.name}
+                    </Text>
+                    <View style={profilestyles.statsRow}>
+                      <View>
+                        <Text>59</Text>
+                        <Text>followers</Text>
+                      </View>
+                      <View>
+                        <Text>59</Text>
+                        <Text>followers</Text>
+                      </View>
+                      <View>
+                        <Text>59</Text>
+                        <Text>followers</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
                 <View>
-                  <Text>name set by user</Text>
-                  <Text>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                    Neque aliquid velit obcaecati similique dolor.
-                  </Text>
+                  {/* <Text>{user.id}</Text> */}
+                  {/* <Text>{user.email}</Text> */}
+                  <Text>{user?.bio}</Text>
                 </View>
                 <TouchableOpacity
                   style={profilestyles.editProfileButton}
-                  onPress={() => router.push("/screens/editprofile")}
+                  onPress={() => {
+                    router.navigate({
+                      pathname: "/screens/editprofile",
+                      params: { userId: user.id },
+                    });
+                  }}
                 >
                   <Text>Edit Profile</Text>
                 </TouchableOpacity>
@@ -96,14 +161,22 @@ export default function Profile() {
                 </View>
                 <View style={profilestyles.storyCircle}>
                   <Image
-                    source={require("../../assets/images/Inner Oval.png")}
+                    source={
+                      user.avatar_url
+                        ? { uri: user.avatar_url }
+                        : require("../../assets/images/cry.png")
+                    }
                     resizeMode="cover"
                     style={profilestyles.storyImage}
                   />
                 </View>
                 <View style={profilestyles.storyCircle}>
                   <Image
-                    source={require("../../assets/images/Inner Oval.png")}
+                    source={
+                      user.avatar_url
+                        ? { uri: user.avatar_url }
+                        : require("../../assets/images/cry.png")
+                    }
                     resizeMode="cover"
                     style={profilestyles.storyImage}
                   />
@@ -194,13 +267,8 @@ const profilestyles = StyleSheet.create({
     width: "100%",
   },
   avatarBorder: {
-    borderRadius: 50,
-    borderColor: "blue",
-    borderWidth: 3,
     alignItems: "center",
     justifyContent: "center",
-    height: 100,
-    width: 100,
   },
   avatarImage: {
     height: 90,

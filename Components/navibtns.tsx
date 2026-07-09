@@ -29,10 +29,10 @@ export const Menu = () => {
         padding: 5,
         justifyContent: "center",
         alignItems: "center",
-        marginHorizontal: 10,
+        margin: 10,
       }}
     >
-      <Feather name="menu" size={24} color="black" />
+      <Feather name="menu" size={25} color="black" />
     </Pressable>
   );
 };
