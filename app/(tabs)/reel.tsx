@@ -1,3 +1,4 @@
+import Reelloading from "@/Components/Skeletons/reelLoading";
 import { API, APIpic } from "@/services/api";
 import { Feather } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -51,7 +53,7 @@ export default function Reel() {
       setUsers(userResponse.data.users);
       const postResponse = await API.get("/posts");
       setPosts(postResponse.data.posts);
-      const imageResponse = await APIpic.get("/v2/list?page=14");
+      const imageResponse = await APIpic.get("/v2/list?page=17");
       setImages(imageResponse.data);
       console.log(posts);
     } catch (error) {
@@ -67,9 +69,7 @@ export default function Reel() {
 
   if (loading) {
     return (
-      <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
-        <ActivityIndicator size={"large"} color={"red"} />
-      </View>
+      <Reelloading/>
     );
   }
 
@@ -83,7 +83,7 @@ export default function Reel() {
             images[index]?.download_url ||
             `https://picsum.photos/600/600?.random=${item.id}`,
         }}
-        style={[styles.page, { height: SCREEN_HEIGHT - tabBarHeight}]}
+        style={[styles.page, { height: SCREEN_HEIGHT - tabBarHeight }]}
       >
         <View style={styles.sideIcons}>
           <TouchableOpacity>
@@ -145,17 +145,23 @@ export default function Reel() {
   };
 
   return (
-    <FlatList
-      data={posts}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderReel}
-      showsVerticalScrollIndicator={false}
-      pagingEnabled
-      initialNumToRender={3}
-      maxToRenderPerBatch={2}
-      windowSize={3}
-      disableIntervalMomentum={true}
-    />
+    <SafeAreaView style={{ height: SCREEN_HEIGHT }}>
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderReel}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={SCREEN_HEIGHT - tabBarHeight}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        disableIntervalMomentum={true}
+        getItemLayout={(_, index) => ({
+          length: SCREEN_HEIGHT - tabBarHeight,
+          offset: (SCREEN_HEIGHT - tabBarHeight) * index,
+          index,
+        })}
+      />
+    </SafeAreaView>
   );
 }
 

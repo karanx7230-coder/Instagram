@@ -118,7 +118,7 @@ export default function Index() {
             <Image
               resizeMode="cover"
               source={{
-                uri: images[index].download_url,
+                uri: images[index + 1]?.download_url,
               }}
               style={homestyles.postprofileimg}
             />
@@ -249,7 +249,7 @@ export default function Index() {
     <SafeAreaView style={homestyles.view} edges={["top"]}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
       <View style={homestyles.toprow}>
-        <TouchableOpacity onPress={()=>router.navigate("/screens/addPost")}>
+        <TouchableOpacity>
           <Feather name="plus" size={24} color="black" />
         </TouchableOpacity>
         <Image
@@ -270,7 +270,10 @@ export default function Index() {
           <View>
             <FlatList
               ListHeaderComponent={
-                <TouchableOpacity style={homestyles.storyContainer}>
+                <TouchableOpacity
+                  style={homestyles.storyContainer}
+                  onPress={() => router.navigate("/(tabs)/search")}
+                >
                   {/* <LinearGradient
                     colors={["#833ab4", "#e1306c", "#fcb045"]}
                     style={homestyles.gradient}

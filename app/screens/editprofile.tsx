@@ -67,7 +67,7 @@ export default function editPost() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: "images",
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
@@ -149,7 +149,7 @@ export default function editPost() {
             />
             <TouchableOpacity onPress={pickAndUploadImage} disabled={uploading}>
               <Text style={editprofilestyle.changePhotoText}>
-               {uploading ? "Uploading..." : "Change Profile Photo"}
+                {uploading ? "Uploading..." : "Change Profile Photo"}
               </Text>
             </TouchableOpacity>
           </View>
