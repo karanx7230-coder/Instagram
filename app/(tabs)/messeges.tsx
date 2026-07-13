@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -48,7 +48,7 @@ export default function Messseges() {
     fetchuser();
   }, []);
   if (loading) {
-    return <ActivityIndicator />;
+    return <ActivityIndicator size={"large"} color={"black"} style={{alignSelf:"center",justifyContent:"center"}} />;
   }
   const rendernote = ({ item, index }: { item: ApiUser; index: number }) => {
     return (
@@ -96,9 +96,11 @@ export default function Messseges() {
     <SafeAreaView style={messegestyles.container} edges={["top"]}>
       <View style={messegestyles.header}>
         <View style={messegestyles.headerLeft}>
-          <Image
-            source={require("../../assets/images/Back.png")}
-            style={messegestyles.backIcon}
+          <Feather
+            name="chevron-left"
+            size={27}
+            color="black"
+            style={messegestyles.chevronIcon}
           />
           <Text style={messegestyles.headerTitle}>karan_7230</Text>
           <Feather
@@ -204,6 +206,7 @@ const messegestyles = StyleSheet.create({
   },
   chevronIcon: {
     marginLeft: 4,
+    alignSelf: "center",
   },
   headerRight: {
     flexDirection: "row",

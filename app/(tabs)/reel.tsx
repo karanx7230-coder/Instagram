@@ -2,10 +2,8 @@ import Reelloading from "@/Components/Skeletons/reelLoading";
 import { API, APIpic } from "@/services/api";
 import { Feather } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -68,9 +66,7 @@ export default function Reel() {
   }, []);
 
   if (loading) {
-    return (
-      <Reelloading/>
-    );
+    return <Reelloading />;
   }
 
   const renderReel = ({ item, index }: { item: ApiPost; index: number }) => {
@@ -145,14 +141,14 @@ export default function Reel() {
   };
 
   return (
-    <SafeAreaView style={{ height: SCREEN_HEIGHT }}>
+    <SafeAreaView style={{ height: SCREEN_HEIGHT - tabBarHeight }}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderReel}
         showsVerticalScrollIndicator={false}
         snapToInterval={SCREEN_HEIGHT - tabBarHeight}
-        snapToAlignment="start"
+        snapToAlignment="end"
         decelerationRate="fast"
         disableIntervalMomentum={true}
         getItemLayout={(_, index) => ({

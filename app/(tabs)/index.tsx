@@ -3,7 +3,7 @@ import { API, APIpic } from "@/services/api";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -249,7 +249,7 @@ export default function Index() {
     <SafeAreaView style={homestyles.view} edges={["top"]}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
       <View style={homestyles.toprow}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.navigate("/screens/addPost")}>
           <Feather name="plus" size={24} color="black" />
         </TouchableOpacity>
         <Image
@@ -272,7 +272,8 @@ export default function Index() {
               ListHeaderComponent={
                 <TouchableOpacity
                   style={homestyles.storyContainer}
-                  onPress={() => router.navigate("/(tabs)/search")}
+                  onPress={() =>
+                    router.navigate("/screens/addstory")}
                 >
                   {/* <LinearGradient
                     colors={["#833ab4", "#e1306c", "#fcb045"]}

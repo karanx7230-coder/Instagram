@@ -1,5 +1,4 @@
 import { Back, Menu } from "@/Components/navibtns";
-import { APIpic } from "@/services/api";
 import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -13,11 +12,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type PicsumImage = {
-  id: string;
-  author: string;
-  download_url: string;
-};
 type User = {
   id: string;
   email: string;
@@ -26,21 +20,17 @@ type User = {
   bio: string;
   avatar_url: string;
 };
+
+type Post = {
+  id: string;
+  image_url: string;
+};
+
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
-  const [postImages, setPostImages] = useState<PicsumImage[]>([]);
-  const [mentionImages, setMentionImages] = useState<PicsumImage[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [user, setUser] = useState<User | any>([]);
-  const currentData = activeTab === "posts" ? postImages : mentionImages;
-  const fetchimage = async () => {
-    try {
-      const response = await APIpic.get(`/v2/list?page=2&limit=8`);
-      setPostImages(response.data);
-      setMentionImages(response.data);
-    } catch {
-      console.log("error");
-    }
-  };
+
   const fetchuser = async () => {
     try {
       const { data } = await supabase.auth.getUser();
@@ -51,6 +41,17 @@ export default function Profile() {
         .select("username, full_name, bio, avatar_url")
         .eq("id", userresponse?.id)
         .single();
+      const { data: userPosts, error } = await supabase
+        .from("posts")
+        .select("id, image_url")
+        .eq("user_id", userresponse?.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.log("posts fetch error", error);
+      } else {
+        setPosts(userPosts ?? []);
+      }
 
       setUser({
         ...userresponse,
@@ -67,9 +68,7 @@ export default function Profile() {
   useEffect(() => {
     fetchuser();
   }, []);
-  useEffect(() => {
-    fetchimage();
-  }, []);
+
   return (
     <SafeAreaView style={profilestyles.safeArea}>
       <View style={profilestyles.flexOne}>
@@ -86,7 +85,6 @@ export default function Profile() {
                   }}
                 >
                   {user.username}
-                  {/* {user.email} */}
                 </Text>
 
                 <Menu />
@@ -132,8 +130,6 @@ export default function Profile() {
                   </View>
                 </View>
                 <View>
-                  {/* <Text>{user.id}</Text> */}
-                  {/* <Text>{user.email}</Text> */}
                   <Text>{user?.bio}</Text>
                 </View>
                 <TouchableOpacity
@@ -228,14 +224,12 @@ export default function Profile() {
               </View>
             </View>
           }
-          data={currentData}
+          data={posts}
           numColumns={3}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Image
-              source={{
-                uri: item.download_url,
-              }}
+              source={{ uri: item.image_url }}
               resizeMode="cover"
               style={profilestyles.gridImage}
             />
