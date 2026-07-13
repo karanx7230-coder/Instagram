@@ -1,12 +1,15 @@
 import { Back, Menu } from "@/Components/navibtns";
 import { supabase } from "@/services/supabase";
+import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
   StyleSheet,
   Text,
+  ScrollView,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -25,13 +28,17 @@ type Post = {
   id: string;
   image_url: string;
 };
-
+type story = {
+  id: string;
+  image_url: string;
+};
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
   const [posts, setPosts] = useState<Post[]>([]);
   const [user, setUser] = useState<User | any>([]);
-
-  const fetchuser = async () => {
+  const [highlight, setHighlight] = useState<story | any>([]);
+  const [story, setStory] = useState<story | any>([]);
+  const fetchdata = async () => {
     try {
       const { data } = await supabase.auth.getUser();
       const userresponse = data.user;
@@ -41,18 +48,32 @@ export default function Profile() {
         .select("username, full_name, bio, avatar_url")
         .eq("id", userresponse?.id)
         .single();
+      console.log(profile);
+      const { data: story } = await supabase
+        .from("story")
+        .select("image_url,id")
+        .eq("id", userresponse?.id)
+        .order("created_at");
+      console.log(story);
+
+      setHighlight(story ?? []);
       const { data: userPosts, error } = await supabase
         .from("posts")
         .select("id, image_url")
         .eq("user_id", userresponse?.id)
         .order("created_at", { ascending: false });
+      console.log(userPosts);
 
       if (error) {
         console.log("posts fetch error", error);
       } else {
         setPosts(userPosts ?? []);
       }
-
+      const { data: Story } = await supabase
+        .from("story")
+        .select("id, image_url")
+        .eq("user_id", userresponse?.id)
+        .order("created_at", { ascending: false });
       setUser({
         ...userresponse,
         username: profile?.username,
@@ -60,13 +81,15 @@ export default function Profile() {
         bio: profile?.bio,
         avatar_url: profile?.avatar_url,
       });
+      setStory(Story ?? []);
+      console.log(Story);
     } catch (error) {
       console.log("error", error);
     }
   };
 
   useEffect(() => {
-    fetchuser();
+    fetchdata();
   }, []);
 
   return (
@@ -144,17 +167,69 @@ export default function Profile() {
                   <Text>Edit Profile</Text>
                 </TouchableOpacity>
               </View>
-              <View style={profilestyles.storiesRow}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={profilestyles.storiesRow}
+              >
                 <View style={profilestyles.storyItem}>
-                  <TouchableOpacity style={profilestyles.storyCircle}>
-                    <Image
-                      source={require("../../assets/images/Add Story.png")}
+                  <TouchableOpacity
+                    onPress={() => router.navigate("/screens/addstory")}
+                    style={profilestyles.storyCircle}
+                  >
+                    <Feather
+                      name="plus"
+                      color={"black"}
                       style={profilestyles.addStoryIcon}
-                      resizeMode="contain"
+                      size={25}
+                    />
+                  </TouchableOpacity>
+                  <Text>Add</Text>
+                </View>
+
+                {story.map((item: story) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/screens/highlight",
+                        params: {
+                          image: item.image_url,
+                        },
+                      })
+                    }
+                  >
+                    <LinearGradient
+                      colors={["#833ab4", "#e1306c", "#fcb045"]}
+                      style={profilestyles.gradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <Image
+                        source={{ uri: item.image_url }}
+                        resizeMode="cover"
+                        style={profilestyles.storyImage}
+                      />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              {/* <View style={profilestyles.storiesRow}>
+                <View style={profilestyles.storyItem}>
+                  <TouchableOpacity
+                    onPress={() => router.navigate("/screens/addstory")}
+                    style={profilestyles.storyCircle}
+                  >
+                    <Feather
+                      name="plus"
+                      color={"black"}
+                      style={profilestyles.addStoryIcon}
+                      size={25}
                     />
                   </TouchableOpacity>
                   <Text>title</Text>
                 </View>
+
                 <View style={profilestyles.storyCircle}>
                   <Image
                     source={
@@ -166,18 +241,7 @@ export default function Profile() {
                     style={profilestyles.storyImage}
                   />
                 </View>
-                <View style={profilestyles.storyCircle}>
-                  <Image
-                    source={
-                      user.avatar_url
-                        ? { uri: user.avatar_url }
-                        : require("../../assets/images/cry.png")
-                    }
-                    resizeMode="cover"
-                    style={profilestyles.storyImage}
-                  />
-                </View>
-              </View>
+              </View> */}
               <View style={profilestyles.tabsRow}>
                 <TouchableOpacity
                   style={[
@@ -298,24 +362,31 @@ const profilestyles = StyleSheet.create({
     justifyContent: "center",
   },
   storyCircle: {
-    height: 60,
-    width: 60,
+    height: 65,
+    width: 65,
     borderColor: "#b5b5b5",
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 30,
+    borderRadius: 34,
   },
   addStoryIcon: {
-    height: 20,
-    width: 20,
-    borderWidth: 2,
     borderColor: "white",
   },
+
+  gradient: {
+    height: 70,
+    width: 70,
+    borderRadius: 45,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 10,
+  },
   storyImage: {
-    height: 55,
-    width: 55,
-    borderRadius: 27,
+    height: 65,
+    backgroundColor: "white",
+    width: 65,
+    borderRadius: 33,
     borderWidth: 2,
     borderColor: "white",
   },
