@@ -1,15 +1,16 @@
 import { Back, Menu } from "@/Components/navibtns";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
-  ScrollView,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -195,6 +196,8 @@ export default function Profile() {
                         pathname: "/screens/highlight",
                         params: {
                           image: item.image_url,
+                          name: user.username,
+                          profile: user.avatar_url,
                         },
                       })
                     }
@@ -292,11 +295,16 @@ export default function Profile() {
           numColumns={3}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <Image
-              source={{ uri: item.image_url }}
-              resizeMode="cover"
-              style={profilestyles.gridImage}
-            />
+            <Pressable
+              style={{ width: "33%", margin: 1 }}
+              onPress={() => router.navigate("/screens/posts")}
+            >
+              <Image
+                source={{ uri: item.image_url }}
+                resizeMode="cover"
+                style={profilestyles.gridImage}
+              />
+            </Pressable>
           )}
         />
       </View>
@@ -407,7 +415,6 @@ const profilestyles = StyleSheet.create({
   },
   gridImage: {
     height: 100,
-    width: "33%",
-    margin: 1,
+    width: "100%",
   },
 });

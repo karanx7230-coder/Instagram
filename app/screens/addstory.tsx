@@ -110,8 +110,8 @@ export default function Addstory() {
         return;
       }
 
-      console.log("14. Success! Navigating home");
-      router.navigate("/(tabs)");
+      console.log("14. Success!");
+      router.navigate("/(tabs)/profile");
     } catch (error) {
       console.log("15. CAUGHT ERROR:", error);
       alert("Something went wrong: " + error);
