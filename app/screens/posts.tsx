@@ -20,6 +20,7 @@ type User = {
   bio: string;
   avatar_url: string;
 };
+
 export default function posts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [user, setUser] = useState<User | any>([]);

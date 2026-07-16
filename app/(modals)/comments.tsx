@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import { API } from "@/services/api";
 
 interface Comment {
   id: number;
@@ -20,9 +19,6 @@ export default function Comments() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        setLoading(true);
-        const res = await API.get(`/comments/post/${userId}`);
-        setComments(res.data.comments);
       } catch (error) {
         console.log(error);
       } finally {
@@ -72,9 +68,20 @@ export default function Comments() {
 }
 
 const styles = StyleSheet.create({
-  title: { textAlign: "center", fontWeight: "600", paddingVertical: 10 },
+  title: {
+    textAlign: "center",
+    fontWeight: "600",
+    paddingVertical: 10,
+    marginBottom: 200,
+  },
   emptyText: { textAlign: "center", marginTop: 50, color: "grey" },
   commentRow: { flexDirection: "row", paddingHorizontal: 15, marginBottom: 15 },
-  avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10, backgroundColor: "#eee" },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+    backgroundColor: "#eee",
+  },
   username: { fontWeight: "bold", fontSize: 13 },
 });

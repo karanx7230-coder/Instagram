@@ -29,7 +29,7 @@ type Post = {
   id: string;
   image_url: string;
 };
-type story = {
+type highlight = {
   id: string;
   image_url: string;
 };
@@ -37,8 +37,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
   const [posts, setPosts] = useState<Post[]>([]);
   const [user, setUser] = useState<User | any>([]);
-  const [highlight, setHighlight] = useState<story | any>([]);
-  const [story, setStory] = useState<story | any>([]);
+  const [highlight, setHighlight] = useState<highlight[]>([]);
   const fetchdata = async () => {
     try {
       const { data } = await supabase.auth.getUser();
@@ -50,14 +49,14 @@ export default function Profile() {
         .eq("id", userresponse?.id)
         .single();
       console.log(profile);
-      const { data: story } = await supabase
-        .from("story")
+      const { data: Highlight } = await supabase
+        .from("highlight")
         .select("image_url,id")
-        .eq("id", userresponse?.id)
+        .eq("user_id", userresponse?.id)
         .order("created_at");
-      console.log(story);
+      console.log("Highlight rows", Highlight);
 
-      setHighlight(story ?? []);
+      setHighlight(Highlight ?? []);
       const { data: userPosts, error } = await supabase
         .from("posts")
         .select("id, image_url")
@@ -70,11 +69,7 @@ export default function Profile() {
       } else {
         setPosts(userPosts ?? []);
       }
-      const { data: Story } = await supabase
-        .from("story")
-        .select("id, image_url")
-        .eq("user_id", userresponse?.id)
-        .order("created_at", { ascending: false });
+
       setUser({
         ...userresponse,
         username: profile?.username,
@@ -82,10 +77,10 @@ export default function Profile() {
         bio: profile?.bio,
         avatar_url: profile?.avatar_url,
       });
-      setStory(Story ?? []);
-      console.log(Story);
+      console.log(Highlight);
     } catch (error) {
       console.log("error", error);
+    } finally {
     }
   };
 
@@ -173,22 +168,22 @@ export default function Profile() {
                 showsHorizontalScrollIndicator={false}
                 style={profilestyles.storiesRow}
               >
-                <View style={profilestyles.storyItem}>
+                <View style={profilestyles.highlightItem}>
                   <TouchableOpacity
-                    onPress={() => router.navigate("/screens/addstory")}
-                    style={profilestyles.storyCircle}
+                    onPress={() => router.navigate("/screens/addHighlight")}
+                    style={profilestyles.highlightCircle}
                   >
                     <Feather
                       name="plus"
                       color={"black"}
-                      style={profilestyles.addStoryIcon}
+                      style={profilestyles.addhighlightIcon}
                       size={25}
                     />
                   </TouchableOpacity>
                   <Text>Add</Text>
                 </View>
 
-                {story.map((item: story) => (
+                {highlight.map((item: highlight) => (
                   <TouchableOpacity
                     key={item.id}
                     onPress={() =>
@@ -211,40 +206,17 @@ export default function Profile() {
                       <Image
                         source={{ uri: item.image_url }}
                         resizeMode="cover"
-                        style={profilestyles.storyImage}
+                        style={profilestyles.highlightImage}
+                        // onLoad={() => console.log("loaded:", item.image_url)}
+                        onError={(e) =>
+                          console.log("error:", e.nativeEvent.error)
+                        }
                       />
                     </LinearGradient>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-              {/* <View style={profilestyles.storiesRow}>
-                <View style={profilestyles.storyItem}>
-                  <TouchableOpacity
-                    onPress={() => router.navigate("/screens/addstory")}
-                    style={profilestyles.storyCircle}
-                  >
-                    <Feather
-                      name="plus"
-                      color={"black"}
-                      style={profilestyles.addStoryIcon}
-                      size={25}
-                    />
-                  </TouchableOpacity>
-                  <Text>title</Text>
-                </View>
 
-                <View style={profilestyles.storyCircle}>
-                  <Image
-                    source={
-                      user.avatar_url
-                        ? { uri: user.avatar_url }
-                        : require("../../assets/images/cry.png")
-                    }
-                    resizeMode="cover"
-                    style={profilestyles.storyImage}
-                  />
-                </View>
-              </View> */}
               <View style={profilestyles.tabsRow}>
                 <TouchableOpacity
                   style={[
@@ -365,11 +337,11 @@ const profilestyles = StyleSheet.create({
     margin: 10,
     gap: 10,
   },
-  storyItem: {
+  highlightItem: {
     alignItems: "center",
     justifyContent: "center",
   },
-  storyCircle: {
+  highlightCircle: {
     height: 65,
     width: 65,
     borderColor: "#b5b5b5",
@@ -378,7 +350,7 @@ const profilestyles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 34,
   },
-  addStoryIcon: {
+  addhighlightIcon: {
     borderColor: "white",
   },
 
@@ -390,7 +362,7 @@ const profilestyles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: 10,
   },
-  storyImage: {
+  highlightImage: {
     height: 65,
     backgroundColor: "white",
     width: 65,

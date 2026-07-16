@@ -10,7 +10,7 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { supabase } from "@/services/supabase";
 
-export default function Addstory() {
+export default function AddHighlight() {
   const [aspect, setAspect] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -40,7 +40,7 @@ export default function Addstory() {
     }
   };
 
-  const [story, setstory] = useState(false);
+  const [Highlight, setHighlight] = useState(false);
 
   const handleProceed = async () => {
     console.log("1. handleProceed called");
@@ -50,7 +50,7 @@ export default function Addstory() {
       return;
     }
     console.log("2. selectedImage:", selectedImage);
-    setstory(true);
+    setHighlight(true);
     try {
       const { data: userData, error: authError } =
         await supabase.auth.getUser();
@@ -60,7 +60,7 @@ export default function Addstory() {
       if (!uid) {
         console.log("4. No uid found — user not logged in");
         alert("You must be logged in");
-        setstory(false);
+        setHighlight(false);
         return;
       }
       console.log("4. uid:", uid);
@@ -76,7 +76,7 @@ export default function Addstory() {
       console.log("8. Uploading as:", fileName);
 
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("story")
+        .from("Highlight")
         .upload(fileName, arrayBuffer, { contentType: "image/jpeg" });
 
       console.log("9. uploadData:", uploadData, "uploadError:", uploadError);
@@ -84,17 +84,17 @@ export default function Addstory() {
       if (uploadError) {
         console.log("10. Upload failed:", uploadError);
         alert("Failed to upload image: " + uploadError.message);
-        setstory(false);
+        setHighlight(false);
         return;
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from("story")
+        .from("highlight")
         .getPublicUrl(fileName);
       console.log("11. publicUrlData:", publicUrlData);
 
       const { data: insertData, error: insertError } = await supabase
-        .from("story")
+        .from("highlight") 
         .insert({
           user_id: uid,
           image_url: publicUrlData.publicUrl,
@@ -105,8 +105,8 @@ export default function Addstory() {
 
       if (insertError) {
         console.log("13. Insert failed:", insertError);
-        alert("Failed to create story: " + insertError.message);
-        setstory(false);
+        alert("Failed to create Highlight: " + insertError.message);
+        setHighlight(false);
         return;
       }
 
@@ -116,7 +116,7 @@ export default function Addstory() {
       console.log("15. CAUGHT ERROR:", error);
       alert("Something went wrong: " + error);
     } finally {
-      setstory(false);
+      setHighlight(false);
     }
   };
   return (
@@ -148,11 +148,11 @@ export default function Addstory() {
             resizeMode="contain"
           />
         ) : (
-          <Text>upload a image for story</Text>
+          <Text>upload a image for Highlight</Text>
         )}
       </TouchableOpacity>
 
-      {story ? <Text>loading</Text> : <Text>story</Text>}
+      {Highlight ? <Text>loading</Text> : <Text>Highlight</Text>}
       <Pressable
         style={{
           height: 50,

@@ -1,9 +1,8 @@
 import Homeloading from "@/Components/Skeletons/feedloading";
-import { API, APIpic } from "@/services/api";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, usePathname } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -17,32 +16,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type ApiUser = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  image: string;
-  address: {
-    city: string;
-    stateCode: string;
-  };
-};
-type ApiPost = {
-  id: number;
-  body: string;
-  title: string;
-  userId: number;
-  reactions: {
-    likes: number;
-    dislikes: number;
-  };
-  views: number;
-  tags: string[];
-};
-type PicsumImage = {
-  download_url: string;
-};
 type You = {
   id: string;
   email: string;
@@ -51,43 +24,66 @@ type You = {
   bio: string;
   avatar_url: string;
 };
-export default function Index() {
-  const [users, setUsers] = useState<ApiUser[]>([]);
-  const [you, setYou] = useState<You | any>([]);
-  const [posts, setPosts] = useState<ApiPost[]>([]);
-  const [images, setImages] = useState<PicsumImage[]>([]);
-  const [loading, setLoading] = useState(false);
+type Post = {
+  id: string;
+  image_url: string;
+  caption: string;
+  location: string;
+};
 
-  const fetchAllData = async () => {
+type User = {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  bio: string;
+  avatar_url: string;
+};
+type story = {
+  id: string;
+  image_url: string;
+};
+export default function Index() {
+  const [you, setYou] = useState<You | any>([]);
+  const [loading, setLoading] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [user, setUser] = useState<User | any>([]);
+  const [story, setStory] = useState<story | any>([]);
+
+  // const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+
+  const fetchdata = async () => {
     setLoading(true);
-    try {
-      const userResponse = await API.get("/users");
-      setUsers(userResponse.data.users);
-      const postResponse = await API.get("/posts");
-      setPosts(postResponse.data.posts);
-      const imageResponse = await APIpic.get("/v2/list?page=16");
-      setImages(imageResponse.data);
-      // console.log(users);
-      // console.log(posts);
-      // console.log(images);
-    } catch (error) {
-      console.log("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const fetchuser = async () => {
     try {
       const { data } = await supabase.auth.getUser();
       const userresponse = data.user;
-
+      console.log("this is user", userresponse);
       const { data: profile } = await supabase
         .from("profiles")
         .select("username, full_name, bio, avatar_url")
         .eq("id", userresponse?.id)
         .single();
+      console.log("this is profile", profile);
+      const { data: story } = await supabase
+        .from("story")
+        .select("image_url,id")
+        .eq("user_id", userresponse?.id)
+        .order("created_at", { ascending: false });
+      console.log("yeh stiry he", story);
+      setStory(story);
+      const { data: userPosts, error } = await supabase
+        .from("posts")
+        .select("id, image_url,caption,location")
+        .eq("user_id", userresponse?.id)
+        .order("created_at", { ascending: false })
+      console.log("posta a ", userPosts);
 
-      setYou({
+      if (error) {
+        console.log("posts fetch error", error);
+      } else {
+        setPosts(userPosts ?? []);
+      }
+      setUser({
         ...userresponse,
         username: profile?.username,
         name: profile?.full_name,
@@ -95,22 +91,19 @@ export default function Index() {
         avatar_url: profile?.avatar_url,
       });
     } catch (error) {
-      console.log("error", error);
+      console.log("erroror a gyaaa ", error);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
-    fetchuser();
+    fetchdata();
   }, []);
-  useEffect(() => {
-    fetchAllData();
-  }, []);
+
   if (loading) {
     return <Homeloading />;
   }
-  const renderPost = ({ item, index }: { item: ApiPost; index: number }) => {
-    const user = users.find((u) => u.id === item.id);
-
-    if (!user) return null;
+  const renderPost = ({ item }: { item: Post }) => {
     return (
       <View>
         <View style={homestyles.postHeader}>
@@ -118,16 +111,14 @@ export default function Index() {
             <Image
               resizeMode="cover"
               source={{
-                uri: images[index + 1]?.download_url,
+                uri: user?.avatar_url,
               }}
               style={homestyles.postprofileimg}
             />
 
             <TouchableOpacity style={homestyles.profileContainer}>
               <Text style={homestyles.postUsername}>{user.username}</Text>
-              <Text style={homestyles.postLocation}>
-                {user.address.city},{user.address.stateCode}
-              </Text>
+              <Text style={homestyles.postLocation}></Text>
             </TouchableOpacity>
           </View>
           <View style={homestyles.followMoreRow}>
@@ -148,8 +139,7 @@ export default function Index() {
         <Image
           resizeMode="cover"
           source={{
-            uri:
-              images[index]?.download_url || `https://picsum.photos/${index}`,
+            uri: item.image_url,
           }}
           style={homestyles.postImage}
         />
@@ -193,32 +183,30 @@ export default function Index() {
             source={require("../../assets/images/Inner Oval.png")}
             style={homestyles.likedByAvatar}
           />
-          <Text>
-            Liked by {user.firstName} and {item.reactions.likes} others
-          </Text>
+          <Text>Liked by {user.firstName} and 2345 others</Text>
         </View>
 
         <View style={homestyles.captionContainer}>
           <Text numberOfLines={2} style={homestyles.captionText}>
             <Text style={homestyles.boldText}>{user.firstName}</Text>
             {"  "}
-            {item.body}
+            {item.caption}
           </Text>
           <Text style={homestyles.viewsText}>
-            {item.views.toLocaleString()} views
+            {(1000 + Math.random() * 100).toFixed(0)} views
           </Text>
         </View>
       </View>
     );
   };
 
-  const renderStoryItem = ({ item }: { item: ApiUser }) => {
+  const renderStoryItem = ({ item }: { item: story }) => {
     return (
       <Pressable
         onPress={() => {
           router.navigate({
             pathname: "/(modals)/story",
-            params: { userId: item.id },
+            params: { image: item.image_url },
           });
         }}
         style={homestyles.storyContainer}
@@ -232,15 +220,13 @@ export default function Index() {
           <Image
             resizeMode="cover"
             source={{
-              uri:
-                images[item.id]?.download_url ||
-                `https://picsum.photos/${item.id}`,
+              uri: item.image_url,
             }}
             style={homestyles.storyimg}
           />
         </LinearGradient>
         <Text style={homestyles.usernameText} numberOfLines={1}>
-          {item.username}
+          {/* {item.id} */}
         </Text>
       </Pressable>
     );
@@ -272,8 +258,7 @@ export default function Index() {
               ListHeaderComponent={
                 <TouchableOpacity
                   style={homestyles.storyContainer}
-                  onPress={() =>
-                    router.navigate("/screens/addstory")}
+                  onPress={() => router.navigate("/screens/addstory")}
                 >
                   {/* <LinearGradient
                     colors={["#833ab4", "#e1306c", "#fcb045"]}
@@ -284,11 +269,7 @@ export default function Index() {
                   <View style={{ marginTop: 5 }}>
                     <Image
                       resizeMode="contain"
-                      source={
-                        you.avatar_url
-                          ? { uri: you.avatar_url }
-                          : require("../../assets/images/cry.png")
-                      }
+                      source={{ uri: user.avatar_url }}
                       style={homestyles.storyimg}
                     />
                     <View style={homestyles.plusIcon}>
@@ -301,8 +282,8 @@ export default function Index() {
                   </Text>
                 </TouchableOpacity>
               }
-              data={users}
-              keyExtractor={(item) => item.id.toString()}
+              data={story}
+              keyExtractor={(item) => item.id}
               renderItem={renderStoryItem}
               horizontal
               showsHorizontalScrollIndicator={false}

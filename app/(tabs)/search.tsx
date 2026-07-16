@@ -1,4 +1,3 @@
-import { APIpic } from "@/services/api";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -28,8 +27,7 @@ export default function Search() {
 
   const fetchImages = async () => {
     try {
-      const imageResponse = await APIpic.get("/v2/list?page=2&limit=100");
-      setImages(imageResponse.data);
+     
     } catch (error) {
       console.log(error);
     } finally {

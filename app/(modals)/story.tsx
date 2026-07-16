@@ -1,49 +1,43 @@
-import { API, APIpic } from "@/services/api";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  PanResponder,
-  Text,
-  View,
-} from "react-native";
+import { supabase } from "@/services/supabase";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type ApiUser = {
-  id: number;
-  firstName: string;
-  lastName: string;
+type User = {
+  id: string;
+  email: string;
   username: string;
-  image: string;
-  address: {
-    city: string;
-    stateCode: string;
-  };
+  name: string;
+  bio: string;
+  avatar_url: string;
 };
 export default function Story() {
-  const userId = Number(useLocalSearchParams().userId);
+  const { image } = useLocalSearchParams<{ image: string }>();
+  const [user, setUser] = useState<User | any>([]);
 
-  const [user, setUser] = useState<ApiUser | null>(null);
-  const [storyImage, setStoryImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchStoryData = async () => {
     try {
       setLoading(true);
+      const { data } = await supabase.auth.getUser();
+      const userresponse = data.user;
+      console.log(user);
+      console.log(image);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, full_name, bio, avatar_url")
+        .eq("id", userresponse?.id)
+        .single();
 
-      const userResponse = await API.get(`/users/${userId}`);
-      setUser(userResponse.data);
-
-      const imageResponse = await APIpic.get(`/id/${userId + 1}/info`).catch(
-        () => null,
-      );
-
-      if (imageResponse && imageResponse.data) {
-        setStoryImage(imageResponse.data.download_url);
-      } else {
-        setStoryImage(`https://picsum.photos/id/${userId}/500/800`);
-      }
+      setUser({
+        ...userresponse,
+        username: profile?.username,
+        name: profile?.full_name,
+        bio: profile?.bio,
+        avatar_url: profile?.avatar_url,
+      });
     } catch (error) {
       console.log("Error fetching story data:", error);
     } finally {
@@ -52,21 +46,8 @@ export default function Story() {
   };
 
   useEffect(() => {
-    if (userId) {
-      fetchStoryData();
-    }
-  }, [userId]);
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
-
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 100) {
-          router.back();
-        }
-      },
-    }),
-  ).current;
+    fetchStoryData();
+  }, []);
 
   if (loading) {
     return (
@@ -79,22 +60,17 @@ export default function Story() {
   }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#000" }}
-      {...panResponder.panHandlers}
-    >
-      {storyImage && (
-        <Image
-          source={{ uri: storyImage }}
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            opacity: 0.8,
-          }}
-          resizeMode="cover"
-        />
-      )}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+      <Image
+        source={{ uri: image }}
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          opacity: 0.8,
+        }}
+        resizeMode="cover"
+      />
 
       <View
         style={{
@@ -105,9 +81,7 @@ export default function Story() {
         }}
       >
         <Image
-          source={{
-            uri: `https://dummyjson.com/icon/${userId}/150`,
-          }}
+          source={{ uri: user.avatar_url }}
           style={{
             height: 40,
             width: 40,
@@ -118,7 +92,7 @@ export default function Story() {
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
-            {user ? `${user.firstName} ${user.lastName}` : `User ${userId}`}
+            {user?.username}
           </Text>
         </View>
       </View>

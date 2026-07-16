@@ -1,5 +1,4 @@
 import { Back, Menu } from "@/Components/navibtns";
-import { APIpic } from "@/services/api";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -19,11 +18,7 @@ export default function UserProfile() {
    const currentData = activeTab === "posts" ? postImages : mentionImages;
    const fetchimage = async () => {
      try {
-       const response = await APIpic.get(`/v2/list?page=2&limit=8`);
- 
-       setPostImages(response.data);
- 
-       setMentionImages(response.data);
+      
      } catch {
        console.log("error");
      }

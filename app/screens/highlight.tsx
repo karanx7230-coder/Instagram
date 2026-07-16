@@ -42,13 +42,13 @@ export default function highlight() {
   //       bio: profile?.bio,
   //       avatar_url: profile?.avatar_url,
   //     });
-  //     const { data: story } = await supabase
-  //       .from("story")
-  //       .select("id, image_url")
-  //       .eq("user_id", userresponse?.id)
-  //       .order("created_at", { ascending: true });
+      // const { data: story } = await supabase
+      //   .from("story")
+      //   .select("id, image_url")
+      //   .eq("user_id", userresponse?.id)
+      //   .order("created_at", { ascending: true });
 
-  //     console.log(story);
+      // console.log(story);
   //     console.log(profile);
   //     console.log(userresponse);
   //     console.log(user);

@@ -1,5 +1,4 @@
 import Reelloading from "@/Components/Skeletons/reelLoading";
-import { API, APIpic } from "@/services/api";
 import { Feather } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useEffect, useState } from "react";
@@ -43,17 +42,11 @@ export default function Reel() {
   const [images, setImages] = useState<PicsumImage[]>([]);
   const [loading, setLoading] = useState(false);
   const tabBarHeight = useBottomTabBarHeight();
-  
+
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const userResponse = await API.get("/users");
-      setUsers(userResponse.data.users);
-      const postResponse = await API.get("/posts");
-      setPosts(postResponse.data.posts);
-      const imageResponse = await APIpic.get("/v2/list?page=17");
-      setImages(imageResponse.data);
-      console.log(posts);
+    
     } catch (error) {
       console.log("Error fetching data:", error);
     } finally {
