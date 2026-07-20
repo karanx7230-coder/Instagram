@@ -2,6 +2,7 @@ import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -17,7 +18,7 @@ import {
 
 export default function Signup() {
   const [email, setEmail] = useState("");
-  const [username, setUesrname] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
@@ -32,7 +33,6 @@ export default function Signup() {
     }
     setLoading(true);
 
-    // check username uniqueness
     const { data: existing } = await supabase
       .from("profiles")
       .select("username")
@@ -41,23 +41,19 @@ export default function Signup() {
 
     if (existing) {
       setLoading(false);
+
       Alert.alert("Username taken", "Try another username.");
       return;
     }
-
-    // const { data, error } = await supabase.auth.signUp({ email, password });
-    console.log("EMAIL VALUE:", JSON.stringify(email));
-    console.log("PASSWORD VALUE:", JSON.stringify(password));
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
-    console.log("SIGNUP DATA:", JSON.stringify(data));
     if (error) {
       setLoading(false);
+
       Alert.alert("Signup failed", error.message);
-      console.log(error.message);
 
       return;
     }
@@ -69,6 +65,7 @@ export default function Signup() {
 
       if (profileError) {
         setLoading(false);
+
         Alert.alert("Profile creation failed", profileError.message);
         return;
       }
@@ -77,7 +74,13 @@ export default function Signup() {
     setLoading(false);
     router.replace("/(tabs)");
   }
-
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator color={"blue"} size={"large"} />
+      </View>
+    );
+  }
   return (
     <KeyboardAvoidingView
       style={Loginstyle.keyboard}
@@ -97,14 +100,29 @@ export default function Signup() {
           />
           <TextInput
             placeholder="username"
+            placeholderTextColor={"#b5b5b5"}
             value={username}
-            onChangeText={setUesrname}
+            onChangeText={setUsername}
             onFocus={() => setUsernameFocused(true)}
             onBlur={() => setUsernameFocused(false)}
             style={[
               Loginstyle.input,
               {
                 borderColor: usernameFocused ? "blue" : "#b9b9b9",
+              },
+            ]}
+          />
+          <TextInput
+            placeholderTextColor={"#b5b5b5"}
+            placeholder="email"
+            value={email}
+            onChangeText={setEmail}
+            onFocus={() => setEmailFocused(true)}
+            onBlur={() => setEmailFocused(false)}
+            style={[
+              Loginstyle.input,
+              {
+                borderColor: emailFocused ? "blue" : "#b9b9b9",
               },
             ]}
           />
@@ -117,6 +135,7 @@ export default function Signup() {
             ]}
           >
             <TextInput
+              placeholderTextColor={"#b5b5b5"}
               placeholder="password"
               value={password}
               onChangeText={setPassword}
@@ -140,19 +159,7 @@ export default function Signup() {
               />
             </TouchableOpacity>
           </View>
-          <TextInput
-            placeholder="email"
-            value={email}
-            onChangeText={setEmail}
-            onFocus={() => setEmailFocused(true)}
-            onBlur={() => setEmailFocused(false)}
-            style={[
-              Loginstyle.input,
-              {
-                borderColor: emailFocused ? "blue" : "#b9b9b9",
-              },
-            ]}
-          />
+
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
@@ -164,10 +171,13 @@ export default function Signup() {
             <Text style={Loginstyle.or}>OR</Text>
             <View style={Loginstyle.line} />
           </View>
-          <Pressable style={Loginstyle.signup}>
+          <Pressable
+            onPress={() => router.navigate("/(auth)/login")}
+            style={Loginstyle.signup}
+          >
             <Text style={Loginstyle.text1}>
-              Don't have an account?
-              <Text style={Loginstyle.text2}>Sign up</Text>
+              Don&apos;t have an account?
+              <Text style={Loginstyle.text2}>Sign in</Text>
             </Text>
           </Pressable>
         </View>
@@ -193,6 +203,7 @@ const Loginstyle = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 15,
     height: "100%",
+    color: "black",
   },
 
   inputimgbtn: {
@@ -225,6 +236,7 @@ const Loginstyle = StyleSheet.create({
     alignSelf: "center",
     padding: 15,
     borderWidth: 1,
+    color: "black",
     width: "100%",
   },
 

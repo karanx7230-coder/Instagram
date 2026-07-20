@@ -1,3 +1,4 @@
+import PostItem from "@/app/screens/postItem";
 import Homeloading from "@/Components/Skeletons/feedloading";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
@@ -16,87 +17,83 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type You = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-  avatar_url: string;
-};
 type Post = {
   id: string;
   image_url: string;
   caption: string;
   location: string;
+  user_id: string;
+  aspect_ratio: number;
+  profiles: {
+    username: string;
+    avatar_url: string;
+  };
 };
-
 type User = {
   id: string;
   email: string;
   username: string;
   name: string;
   bio: string;
-  avatar_url: string;
 };
 type story = {
   id: string;
   image_url: string;
+  profiles: {
+    username: string;
+    avatar_url: string;
+  };
 };
 export default function Index() {
-  const [you, setYou] = useState<You | any>([]);
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [user, setUser] = useState<User | any>([]);
   const [story, setStory] = useState<story | any>([]);
 
-  // const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
-
-  const fetchdata = async () => {
-    setLoading(true);
-    try {
-      const { data } = await supabase.auth.getUser();
-      const userresponse = data.user;
-      console.log("this is user", userresponse);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, full_name, bio, avatar_url")
-        .eq("id", userresponse?.id)
-        .single();
-      console.log("this is profile", profile);
-      const { data: story } = await supabase
-        .from("story")
-        .select("image_url,id")
-        .eq("user_id", userresponse?.id)
-        .order("created_at", { ascending: false });
-      console.log("yeh stiry he", story);
-      setStory(story);
-      const { data: userPosts, error } = await supabase
-        .from("posts")
-        .select("id, image_url,caption,location")
-        .eq("user_id", userresponse?.id)
-        .order("created_at", { ascending: false })
-      console.log("posta a ", userPosts);
-
-      if (error) {
-        console.log("posts fetch error", error);
-      } else {
-        setPosts(userPosts ?? []);
-      }
-      setUser({
-        ...userresponse,
-        username: profile?.username,
-        name: profile?.full_name,
-        bio: profile?.bio,
-        avatar_url: profile?.avatar_url,
-      });
-    } catch (error) {
-      console.log("erroror a gyaaa ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
   useEffect(() => {
+    const fetchdata = async () => {
+      setLoading(true);
+      try {
+        const { data } = await supabase.auth.getUser();
+        const userresponse = data.user;
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, full_name, bio, avatar_url")
+          .eq("id", userresponse?.id)
+          .single();
+        const { data: story, error: errorstory } = await supabase
+          .from("story")
+          .select("image_url,id,profiles(username, avatar_url)")
+          .order("created_at", { ascending: false });
+        setStory(story);
+        if (errorstory) {
+        }
+        const { data: allPosts, error } = await supabase
+          .from("posts")
+          .select(
+            "id, image_url, caption, location, user_id,aspect_ratio, profiles(username, avatar_url)",
+          )
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.log("posts fetch error", error);
+        } else {
+          setPosts((allPosts as any) ?? []);
+        }
+        setUser({
+          ...userresponse,
+          username: profile?.username,
+          name: profile?.full_name,
+          bio: profile?.bio,
+          avatar_url: profile?.avatar_url,
+        });
+      } catch (error) {
+        console.log("erroror a gyaaa ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchdata();
   }, []);
 
@@ -105,108 +102,30 @@ export default function Index() {
   }
   const renderPost = ({ item }: { item: Post }) => {
     return (
-      <View>
-        <View style={homestyles.postHeader}>
-          <View style={homestyles.postUserInfo}>
-            <Image
-              resizeMode="cover"
-              source={{
-                uri: user?.avatar_url,
-              }}
-              style={homestyles.postprofileimg}
-            />
-
-            <TouchableOpacity style={homestyles.profileContainer}>
-              <Text style={homestyles.postUsername}>{user.username}</Text>
-              <Text style={homestyles.postLocation}></Text>
-            </TouchableOpacity>
-          </View>
-          <View style={homestyles.followMoreRow}>
-            <TouchableOpacity style={homestyles.followButton}>
-              <Text>Follow</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Feather
-                name="more-vertical"
-                size={20}
-                color="black"
-                style={{ top: 5 }}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <Image
-          resizeMode="cover"
-          source={{
-            uri: item.image_url,
-          }}
-          style={homestyles.postImage}
-        />
-        <View style={homestyles.postbelowrow}>
-          <View style={homestyles.iconRow}>
-            <TouchableOpacity>
-              <Feather name="heart" size={24} color="black" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                router.navigate({
-                  pathname: "/(modals)/comments",
-                  params: { userId: item.id },
-                });
-              }}
-            >
-              <Image
-                resizeMode="contain"
-                source={require("../../assets/images/Comment.png")}
-                style={homestyles.iconimg}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity>
-              <Image
-                resizeMode="contain"
-                source={require("../../assets/images/Messanger.png")}
-                style={homestyles.iconimg}
-              />
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity>
-            <Feather name="bookmark" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={homestyles.likesRow}>
-          <Image
-            resizeMode="contain"
-            source={require("../../assets/images/Inner Oval.png")}
-            style={homestyles.likedByAvatar}
-          />
-          <Text>Liked by {user.firstName} and 2345 others</Text>
-        </View>
-
-        <View style={homestyles.captionContainer}>
-          <Text numberOfLines={2} style={homestyles.captionText}>
-            <Text style={homestyles.boldText}>{user.firstName}</Text>
-            {"  "}
-            {item.caption}
-          </Text>
-          <Text style={homestyles.viewsText}>
-            {(1000 + Math.random() * 100).toFixed(0)} views
-          </Text>
-        </View>
-      </View>
+      <PostItem
+        postId={item.id}
+        currentUserId={user?.id}
+        imageUrl={item.image_url}
+        caption={item.caption}
+        username={item.profiles?.username}
+        avatarUrl={item.profiles?.avatar_url}
+        location={item.location}
+        aspect={item.aspect_ratio}
+      />
     );
   };
-
   const renderStoryItem = ({ item }: { item: story }) => {
     return (
       <Pressable
         onPress={() => {
           router.navigate({
             pathname: "/(modals)/story",
-            params: { image: item.image_url },
+            params: {
+              image: item.image_url,
+              id: item.id,
+              username: item.profiles.username,
+              profileimg: item.profiles.avatar_url,
+            },
           });
         }}
         style={homestyles.storyContainer}
@@ -220,13 +139,13 @@ export default function Index() {
           <Image
             resizeMode="cover"
             source={{
-              uri: item.image_url,
+              uri: item.profiles.avatar_url,
             }}
             style={homestyles.storyimg}
           />
         </LinearGradient>
         <Text style={homestyles.usernameText} numberOfLines={1}>
-          {/* {item.id} */}
+          {item.profiles.username}
         </Text>
       </Pressable>
     );

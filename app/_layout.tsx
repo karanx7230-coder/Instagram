@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Stack, useRouter, useSegments } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
 import { supabase } from "@/services/supabase";
 import { Session } from "@supabase/supabase-js";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,14 +24,13 @@ export default function RootLayout() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
-
   useEffect(() => {
     if (loading) return;
     const inAuth = segments[0] === "(auth)";
 
     if (!session && !inAuth) router.replace("/(auth)/login");
     if (session && inAuth) router.replace("/(tabs)");
-  }, [session, loading, segments]);
+  }, [session, loading, segments, router]);
 
   if (loading) {
     return (

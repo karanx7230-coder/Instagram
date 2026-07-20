@@ -2,14 +2,15 @@ import { Stack } from "expo-router";
 
 export default function ModalsLayout() {
   return (
-    <Stack>
+    <Stack
+    screenOptions={{
+        headerShown: false,}}>
       <Stack.Screen
         name="comments"
         options={{
           presentation: "transparentModal",
           contentStyle: { backgroundColor: "transparent" },
           animation: "fade",
-          headerShown: false,
         }}
       />
       <Stack.Screen
@@ -17,7 +18,6 @@ export default function ModalsLayout() {
         options={{
           presentation: "transparentModal",
           animation: "fade",
-          headerShown: false,
         }}
       />
     </Stack>

@@ -1,42 +1,42 @@
+import { Feather } from "@expo/vector-icons";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  StyleSheet,
   Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
-// import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/services/supabase";
+import { SafeAreaView } from "react-native-safe-area-context";
 type SettingsOption = {
   icon: string;
   label: string;
   onPress: () => void;
 };
 
+const SettingsOptions = ({ icon, label, onPress }: SettingsOption) => {
+  return (
+    <TouchableOpacity style={styles.row} onPress={onPress}>
+      <View style={styles.rowLeft}>
+        <Feather
+          name={icon as any}
+          size={22}
+          color="#262626"
+          style={styles.icon}
+        />
+        <Text style={styles.rowLabel}> {label} </Text>
+      </View>
+      <Feather name="chevron-right" size={16} color="#bbb" />
+    </TouchableOpacity>
+  );
+};
+
 export default function Settings() {
   const [isPrivate, setIsPrivate] = React.useState(false);
   const handleLogout = async () => {
     await supabase.auth.signOut();
-  };
-  const SettingsOptions = ({ icon, label, onPress }: SettingsOption) => {
-    return (
-      <TouchableOpacity style={styles.row} onPress={onPress}>
-        <View style={styles.rowLeft}>
-          <Feather
-            name={icon as any}
-            size={22}
-            color="#262626"
-            style={styles.icon}
-          />
-          <Text style={styles.rowLabel}> {label} </Text>
-        </View>
-        <Feather name="chevron-right" size={16} color="#bbb" />
-      </TouchableOpacity>
-    );
   };
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -52,7 +52,7 @@ export default function Settings() {
         </View>
         <Text style={styles.sectionHeader}>Privacy & Visibility</Text>
         <View style={styles.cardGroup}>
-          <TouchableOpacity style={[styles.row,{}]}>
+          <TouchableOpacity style={[styles.row, {}]}>
             <View style={styles.rowLeft}>
               <Feather
                 name="lock"
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 14,
-    height:50,
+    height: 50,
     paddingHorizontal: 16,
   },
   rowLeft: { flexDirection: "row", alignItems: "center" },

@@ -1,21 +1,20 @@
+import { supabase } from "@/services/supabase";
+import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
-  TouchableOpacity,
-  Text,
   Image,
   Pressable,
   ScrollView,
+  Text,
+  TouchableOpacity,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
-import { router } from "expo-router";
-import { supabase } from "@/services/supabase";
 
 export default function Addstory() {
   const [aspect, setAspect] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const pickImage = async () => {
-    // 1. FIX: Request permission first (Expo requires this)
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -24,13 +23,11 @@ export default function Addstory() {
       return;
     }
 
-    // 2. FIX: Use launchImageLibraryAsync instead of just ImagePicker()
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images", // Use modern Expo string syntax
+      mediaTypes: "images",
       quality: 1,
     });
 
-    // 3. FIX: Expo returns result.canceled. If not canceled, read assets
     if (!result.canceled && result.assets[0].uri) {
       const uri = result.assets[0].uri;
       setSelectedImage(uri);
@@ -43,46 +40,32 @@ export default function Addstory() {
   const [story, setstory] = useState(false);
 
   const handleProceed = async () => {
-    console.log("1. handleProceed called");
     if (!selectedImage) {
-      console.log("2. No image selected, aborting");
       alert("Please select an image first");
       return;
     }
-    console.log("2. selectedImage:", selectedImage);
     setstory(true);
     try {
-      const { data: userData, error: authError } =
-        await supabase.auth.getUser();
-      console.log("3. userData:", userData, "authError:", authError);
+      const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
 
       if (!uid) {
-        console.log("4. No uid found — user not logged in");
         alert("You must be logged in");
         setstory(false);
         return;
       }
-      console.log("4. uid:", uid);
 
-      console.log("5. Fetching local image...");
       const response = await fetch(selectedImage);
-      console.log("6. fetch response ok:", response.ok, response.status);
 
       const arrayBuffer = await response.arrayBuffer();
-      console.log("7. arrayBuffer byteLength:", arrayBuffer.byteLength);
 
       const fileName = `${uid}-${Date.now()}.jpg`;
-      console.log("8. Uploading as:", fileName);
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("story")
         .upload(fileName, arrayBuffer, { contentType: "image/jpeg" });
 
-      console.log("9. uploadData:", uploadData, "uploadError:", uploadError);
-
       if (uploadError) {
-        console.log("10. Upload failed:", uploadError);
         alert("Failed to upload image: " + uploadError.message);
         setstory(false);
         return;
@@ -91,9 +74,8 @@ export default function Addstory() {
       const { data: publicUrlData } = supabase.storage
         .from("story")
         .getPublicUrl(fileName);
-      console.log("11. publicUrlData:", publicUrlData);
 
-      const { data: insertData, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("story")
         .insert({
           user_id: uid,
@@ -101,19 +83,15 @@ export default function Addstory() {
         })
         .select();
 
-      console.log("12. insertData:", insertData, "insertError:", insertError);
-
       if (insertError) {
-        console.log("13. Insert failed:", insertError);
         alert("Failed to create story: " + insertError.message);
         setstory(false);
         return;
       }
 
-      console.log("14. Success!");
-      router.navigate("/(tabs)/profile");
+      console.log("Success!");
+      router.navigate("/(tabs)");
     } catch (error) {
-      console.log("15. CAUGHT ERROR:", error);
       alert("Something went wrong: " + error);
     } finally {
       setstory(false);

@@ -1,53 +1,79 @@
+import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-type PicsumImage = {
+type Post = {
   id: string;
-  author: string;
-  download_url: string;
+  image_url: string;
+  caption: string;
+  location: string;
+  user_id: string;
+  profiles: {
+    username: string;
+    avatar_url: string;
+  };
 };
-
 const screenWidth = Dimensions.get("window").width;
 const imageSize = screenWidth / 3;
 
 export default function Search() {
-  const [images, setImages] = useState<PicsumImage[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchImages = async () => {
-    try {
-     
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const { data: allPosts, error } = await supabase
+          .from("posts")
+          .select(
+            "id, image_url, caption, location, user_id, profiles(username, avatar_url)",
+          )
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.log("posts fetch error", error);
+        } else {
+          setPosts((allPosts as any) ?? []);
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchImages();
   }, []);
 
-  const renderPosts = ({ item }: { item: PicsumImage }) => {
+  const renderPosts = ({ item }: { item: Post }) => {
     return (
-      <Image
-        resizeMode="cover"
-        source={{
-          uri: item.download_url,
+      <Pressable
+        onPress={() => {
+          router.push({
+            pathname: "/screens/searchpost",
+            params: { postId: item.id },
+          });
         }}
-        style={searchStyle.image}
-      />
+      >
+        <Image
+          resizeMode="cover"
+          source={{
+            uri: item.image_url,
+          }}
+          style={searchStyle.image}
+        />
+      </Pressable>
     );
   };
 
@@ -68,7 +94,7 @@ export default function Search() {
         </View>
       ) : (
         <FlatList
-          data={images}
+          data={posts}
           keyExtractor={(item) => item.id}
           renderItem={renderPosts}
           numColumns={3}

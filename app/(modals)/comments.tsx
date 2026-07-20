@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
+import  { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 
 interface Comment {
   id: number;
@@ -13,12 +13,14 @@ interface Comment {
 
 export default function Comments() {
   const { userId } = useLocalSearchParams();
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments] = useState<Comment[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchComments = async () => {
       try {
+        // TODO: fetch comments from supabase
       } catch (error) {
         console.log(error);
       } finally {

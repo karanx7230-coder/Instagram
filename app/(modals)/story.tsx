@@ -4,58 +4,41 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-  avatar_url: string;
-};
 export default function Story() {
-  const { image } = useLocalSearchParams<{ image: string }>();
-  const [user, setUser] = useState<User | any>([]);
+  const { image, id, username, profileimg } = useLocalSearchParams<{
+    image: string;
+    id: string;
+    username: string;
+    profileimg: string;
+  }>();
 
   const [loading, setLoading] = useState(true);
 
-  const fetchStoryData = async () => {
-    try {
-      setLoading(true);
-      const { data } = await supabase.auth.getUser();
-      const userresponse = data.user;
-      console.log(user);
-      console.log(image);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, full_name, bio, avatar_url")
-        .eq("id", userresponse?.id)
-        .single();
-
-      setUser({
-        ...userresponse,
-        username: profile?.username,
-        name: profile?.full_name,
-        bio: profile?.bio,
-        avatar_url: profile?.avatar_url,
-      });
-    } catch (error) {
-      console.log("Error fetching story data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchStoryData();
-  }, []);
+    const fetchStoryData = async () => {
+      try {
+        setLoading(true);
 
+        await supabase
+          .from("profiles")
+
+          .select("username, full_name, bio, avatar_url")
+          .eq("id", id)
+          .single();
+      } catch (error) {
+        console.log("Error fetching story data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStoryData();
+  }, [id]);
   if (loading) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      >
-        <ActivityIndicator size="large" color="#000" />
-      </SafeAreaView>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={"large"} color={"blue"} />
+      </View>
     );
   }
 
@@ -81,7 +64,7 @@ export default function Story() {
         }}
       >
         <Image
-          source={{ uri: user.avatar_url }}
+          source={{ uri: profileimg }}
           style={{
             height: 40,
             width: 40,
@@ -92,7 +75,7 @@ export default function Story() {
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
-            {user?.username}
+            {username}
           </Text>
         </View>
       </View>

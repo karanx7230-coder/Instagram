@@ -9,29 +9,30 @@ type You = {
 export default function RootLayout() {
   const [you, setYou] = useState<You | any>([]);
 
-  const fetchuser = async () => {
-    try {
-      const { data } = await supabase.auth.getUser();
-      const userresponse = data.user;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, full_name, bio, avatar_url")
-        .eq("id", userresponse?.id)
-        .single();
-
-      setYou({
-        ...userresponse,
-        username: profile?.username,
-        name: profile?.full_name,
-        bio: profile?.bio,
-        avatar_url: profile?.avatar_url,
-      });
-    } catch (error) {
-      console.log("error", error);
-    }
-  };
   useEffect(() => {
+    const fetchuser = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const userresponse = data.user;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, full_name, bio, avatar_url")
+          .eq("id", userresponse?.id)
+          .single();
+
+        setYou({
+          ...userresponse,
+          username: profile?.username,
+          name: profile?.full_name,
+          bio: profile?.bio,
+          avatar_url: profile?.avatar_url,
+        });
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+
     fetchuser();
   }, []);
   return (
@@ -40,6 +41,7 @@ export default function RootLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarShowLabel: false,
+
         tabBarStyle: {
           backgroundColor: "#ffffff",
           height: 60,
@@ -55,18 +57,7 @@ export default function RootLayout() {
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Home.png")}
-              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="search"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={require("../../assets/images/Search.png")}
-              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
+              style={[style.img, { opacity: focused ? 1 : 0.8 }]}
             />
           ),
         }}
@@ -88,6 +79,18 @@ export default function RootLayout() {
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Messanger.png")}
+              style={[style.img, { opacity: focused ? 1 : 0.6 }]}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="search"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require("../../assets/images/Search.png")}
               style={[style.img, { opacity: focused ? 1 : 0.6 }]}
             />
           ),

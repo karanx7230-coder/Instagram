@@ -1,12 +1,9 @@
 import { Dimensions, StatusBar, StyleSheet, View } from "react-native";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
-
+const tabBarHeight = 60;
 export default function Reelloading() {
-  const tabBarHeight = useBottomTabBarHeight();
-
   return (
     <SafeAreaView style={{ height: SCREEN_HEIGHT }}>
       <StatusBar barStyle={"light-content"} backgroundColor={"black"} />
@@ -71,7 +68,7 @@ const styles = StyleSheet.create({
     height: 10,
     width: 100,
     borderRadius: 5,
-    backgroundColor:"#dcdcdc",
+    backgroundColor: "#dcdcdc",
     marginHorizontal: 10,
   },
   followBtn: {

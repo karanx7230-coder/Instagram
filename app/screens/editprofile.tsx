@@ -1,7 +1,7 @@
 import { supabase } from "@/services/supabase";
+import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
-import { decode } from "base64-arraybuffer"; // npm i base64-arraybuffer
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Image,
@@ -19,6 +19,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type inputprops = TextInputProps & {
   placeholder: string;
 };
+type User = {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  bio: string;
+  avatar_url: string;
+};
 const Input = ({ placeholder, ...props }: inputprops) => {
   return (
     <TextInput
@@ -28,34 +36,175 @@ const Input = ({ placeholder, ...props }: inputprops) => {
     />
   );
 };
-export default function editPost() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export default function EditPost() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const { userId } = useLocalSearchParams<{ userId: string }>();
+  const [user, setUser] = useState<User | any>([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        const { data: authData, error: authError } =
+          await supabase.auth.getUser();
+        if (authError) throw authError;
+        const authUser = authData.user;
         const { data, error } = await supabase
           .from("profiles")
           .select("full_name, bio, avatar_url")
-          .eq("id", userId)
+          .eq("id", authUser.id)
           .single();
 
         if (error) throw error;
-
-        setName(data?.full_name ?? "");
-        setBio(data?.bio ?? "");
-        setAvatarUrl(data?.avatar_url ?? null);
+        setUser({
+          id: authUser.id,
+          email: authUser.email,
+        });
+        setName(data.full_name ?? "");
+        setBio(data.bio ?? "");
+        setAvatarUrl(data.avatar_url ?? null);
       } catch (error) {
         console.log("fetch profile error:", error);
       }
     };
 
-    if (userId) fetchProfile();
-  }, [userId]);
+    fetchProfile();
+  }, []);
 
   const pickAndUploadImage = async () => {
     try {
@@ -78,7 +227,7 @@ export default function editPost() {
 
       setUploading(true);
       const fileExt = result.assets[0].uri.split(".").pop();
-      const filePath = `${userId}/${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
@@ -98,7 +247,7 @@ export default function editPost() {
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: newAvatarUrl })
-        .eq("id", userId);
+        .eq("id", user.id);
 
       if (updateError) throw updateError;
 
@@ -115,7 +264,7 @@ export default function editPost() {
       const { error } = await supabase
         .from("profiles")
         .update({ full_name: name, bio })
-        .eq("id", userId);
+        .eq("id", user.id);
       if (error) throw error;
       router.navigate("/(tabs)/profile");
     } catch (error) {
@@ -170,24 +319,24 @@ export default function editPost() {
           <View style={editprofilestyle.row}>
             <Text style={editprofilestyle.label}>Email</Text>
             <Input
-              // value={}
-              // onChangeText={}
+              
+              
               placeholder="email"
             />
           </View>
           <View style={editprofilestyle.row}>
             <Text style={editprofilestyle.label}>Phone</Text>
             <Input
-              // value={}
-              // onChangeText={}
+              
+              
               placeholder="phone"
             />
           </View>
           <View style={editprofilestyle.row}>
             <Text style={editprofilestyle.label}>Gender</Text>
             <Input
-              // value={}
-              // onChangeText={}
+              
+              
               placeholder="gender"
             />
           </View>

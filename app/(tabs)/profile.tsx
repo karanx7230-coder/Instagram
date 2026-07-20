@@ -1,4 +1,5 @@
 import { Back, Menu } from "@/Components/navibtns";
+import ProfileLoading from "@/Components/Skeletons/profileLoading";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -38,56 +39,56 @@ export default function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [user, setUser] = useState<User | any>([]);
   const [highlight, setHighlight] = useState<highlight[]>([]);
-  const fetchdata = async () => {
-    try {
-      const { data } = await supabase.auth.getUser();
-      const userresponse = data.user;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, full_name, bio, avatar_url")
-        .eq("id", userresponse?.id)
-        .single();
-      console.log(profile);
-      const { data: Highlight } = await supabase
-        .from("highlight")
-        .select("image_url,id")
-        .eq("user_id", userresponse?.id)
-        .order("created_at");
-      console.log("Highlight rows", Highlight);
-
-      setHighlight(Highlight ?? []);
-      const { data: userPosts, error } = await supabase
-        .from("posts")
-        .select("id, image_url")
-        .eq("user_id", userresponse?.id)
-        .order("created_at", { ascending: false });
-      console.log(userPosts);
-
-      if (error) {
-        console.log("posts fetch error", error);
-      } else {
-        setPosts(userPosts ?? []);
-      }
-
-      setUser({
-        ...userresponse,
-        username: profile?.username,
-        name: profile?.full_name,
-        bio: profile?.bio,
-        avatar_url: profile?.avatar_url,
-      });
-      console.log(Highlight);
-    } catch (error) {
-      console.log("error", error);
-    } finally {
-    }
-  };
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
+    const fetchdata = async () => {
+      try {
+        setLoading(true);
+        const { data } = await supabase.auth.getUser();
+        const userresponse = data.user;
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, full_name, bio, avatar_url")
+          .eq("id", userresponse?.id)
+          .single();
+        const { data: Highlight } = await supabase
+          .from("highlight")
+          .select("image_url,id")
+          .eq("user_id", userresponse?.id)
+          .order("created_at");
+
+        setHighlight((Highlight as any) ?? []);
+        const { data: userPosts, error } = await supabase
+          .from("posts")
+          .select("id, image_url")
+          .eq("user_id", userresponse?.id)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.log("posts fetch error", error);
+        } else {
+          setPosts(userPosts ?? []);
+        }
+
+        setUser({
+          ...userresponse,
+          username: profile?.username,
+          name: profile?.full_name,
+          bio: profile?.bio,
+          avatar_url: profile?.avatar_url,
+        });
+      } catch (error) {
+        console.log("error", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchdata();
   }, []);
-
+  if (loading) {
+    return <ProfileLoading />;
+  }
   return (
     <SafeAreaView style={profilestyles.safeArea}>
       <View style={profilestyles.flexOne}>
@@ -207,10 +208,6 @@ export default function Profile() {
                         source={{ uri: item.image_url }}
                         resizeMode="cover"
                         style={profilestyles.highlightImage}
-                        // onLoad={() => console.log("loaded:", item.image_url)}
-                        onError={(e) =>
-                          console.log("error:", e.nativeEvent.error)
-                        }
                       />
                     </LinearGradient>
                   </TouchableOpacity>
@@ -263,13 +260,18 @@ export default function Profile() {
               </View>
             </View>
           }
-          data={posts}
+          data={activeTab === "posts" ? posts : []}
           numColumns={3}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable
               style={{ width: "33%", margin: 1 }}
-              onPress={() => router.navigate("/screens/posts")}
+              onPress={() => {
+                router.push({
+                  pathname: "/screens/posts",
+                  params: { userId: user.id, postId: item.id },
+                });
+              }}
             >
               <Image
                 source={{ uri: item.image_url }}
@@ -364,7 +366,7 @@ const profilestyles = StyleSheet.create({
   },
   highlightImage: {
     height: 65,
-    backgroundColor: "white",
+    backgroundColor: "blue",
     width: 65,
     borderRadius: 33,
     borderWidth: 2,
@@ -386,7 +388,7 @@ const profilestyles = StyleSheet.create({
     height: 24,
   },
   gridImage: {
-    height: 100,
+    height: 150,
     width: "100%",
   },
 });

@@ -23,36 +23,25 @@ export default function Login() {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
   const [loading, setLoading] = useState(false);
-  async function handleLogin() {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Missing fields", "Please enter email and password.");
       return;
     }
-
-    console.log("=== LOGIN ATTEMPT ===");
-    console.log("EMAIL VALUE:", JSON.stringify(email));
-    console.log("PASSWORD VALUE:", JSON.stringify(password));
-
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
     setLoading(false);
-
-    console.log("LOGIN DATA:", JSON.stringify(data));
-    console.log("LOGIN ERROR:", JSON.stringify(error));
-
     if (error) {
       Alert.alert("Login failed", error.message);
       return;
     }
 
-    console.log("LOGIN SUCCESS - USER:", JSON.stringify(data.user));
-    console.log("LOGIN SUCCESS - SESSION:", JSON.stringify(data.session));
-
     router.replace("/(tabs)");
-  }
+  };
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -79,6 +68,7 @@ export default function Login() {
           />
           <TextInput
             placeholder="EMAIL"
+            placeholderTextColor={"#b5b5b5"}
             value={email}
             onChangeText={setEmail}
             onFocus={() => setEmailFocused(true)}
@@ -100,6 +90,7 @@ export default function Login() {
           >
             <TextInput
               placeholder="password"
+              placeholderTextColor={"#b5b5b5"}
               value={password}
               onChangeText={setPassword}
               onFocus={() => setPasswordFocused(true)}
@@ -138,7 +129,7 @@ export default function Login() {
             style={Loginstyle.signup}
           >
             <Text style={Loginstyle.text1}>
-              Don't have an account?
+              Don&apos;t have an account?
               <Text style={Loginstyle.text2}>Sign up</Text>
             </Text>
           </Pressable>
@@ -165,6 +156,7 @@ const Loginstyle = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 15,
     height: "100%",
+    color: "black",
   },
 
   inputimgbtn: {
@@ -198,6 +190,7 @@ const Loginstyle = StyleSheet.create({
     padding: 15,
     borderWidth: 1,
     width: "100%",
+    color: "black",
   },
 
   logo: {

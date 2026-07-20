@@ -1,3 +1,4 @@
+import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -10,82 +11,162 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type PicsumImage = {
-  download_url: string;
+type User = {
+  id: string;
+  username: string;
+  full_name: string;
+  bio: string;
+  avatar_url: string;
 };
+
 export default function Messseges() {
-  const [images, setImages] = useState<PicsumImage[]>([]);
+  const [user, setUser] = useState<User | any>([]);
   const [loading, setLoading] = useState(false);
-  const fetchuser = async () => {
-    setLoading(true);
-    try {
-    } catch (error) {
-      console.log("failed", error);
-    } finally {
-      setLoading(false);
-    }
-  };
   useEffect(() => {
+    const fetchuser = async () => {
+      setLoading(true);
+      try {
+        await supabase.auth.getUser();
+        const { data: profileres } = await supabase
+          .from("profiles")
+          .select("id, username, full_name, bio, avatar_url");
+
+        setUser(profileres);
+      } catch (error) {
+        console.log("failed", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchuser();
   }, []);
+
   if (loading) {
     return (
-      <ActivityIndicator
-        size={"large"}
-        color={"black"}
-        style={{ alignSelf: "center", justifyContent: "center" }}
-      />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={"large"} color={"blue"} />
+      </View>
     );
   }
-  const rendernote = ({ item, index }: { item: any; index: number }) => {
+  const rendernote = ({ item }: { item: User }) => {
     return (
       <View style={{ alignItems: "center", width: 75, paddingTop: 18 }}>
-        <View style={{ position: "relative" }}>
-          <Image
-            source={{ uri: images[index]?.download_url }}
-            style={messegestyles.noteImage}
-          />
-          <View style={messegestyles.noteOnlineDot} />
-
-          <View style={messegestyles.noteBubbleTriangle} />
-        </View>
-        <Text
-          style={messegestyles.noteUsername}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {item.firstName}
+        <Image
+          source={{ uri: item.avatar_url }}
+          style={messegestyles.noteImage}
+        />
+        <Text numberOfLines={1} style={messegestyles.noteUsername}>
+          {item.username}
         </Text>
       </View>
     );
   };
 
-  // // const rendermessege = ({ item, index }: { item: ApiUser; index: number }) => {
-  //   return (
-  //     <TouchableOpacity style={messegestyles.messageRow}>
-  //       <View style={messegestyles.messageLeft}>
-  //         <TouchableOpacity onPress={() => router.back}>
-  //           <Image
-  //             source={{ uri: images[index]?.download_url }}
-  //             style={messegestyles.messageAvatar}
-  //           />
-  //         </TouchableOpacity>
-  //         <View>
-  //           <Text style={messegestyles.messageUsername}>{item.username}</Text>
-  //           <Text style={messegestyles.messageActiveTime}>active time ago</Text>
-  //         </View>
-  //       </View>
-  //       <Feather name="camera" size={28} color="#4d4d4d" />
-  //     </TouchableOpacity>
-  //   );
-  // };
+  const rendermessege = ({ item }: { item: User }) => {
+    return (
+      <TouchableOpacity onPress={() => {}} style={messegestyles.messageRow}>
+        <View style={messegestyles.messageLeft}>
+          <TouchableOpacity onPress={() => router.back}>
+            <Image
+              source={{ uri: item.avatar_url }}
+              style={messegestyles.messageAvatar}
+            />
+          </TouchableOpacity>
+          <View>
+            <Text style={messegestyles.messageUsername}>{item.username}</Text>
+            <Text style={messegestyles.messageActiveTime}>active time ago</Text>
+          </View>
+        </View>
+        <Feather name="camera" size={28} color="#4d4d4d" />
+      </TouchableOpacity>
+    );
+  };
   return (
-    <SafeAreaView
-      style={messegestyles.container}
-      edges={["top"]}
-    ></SafeAreaView>
+    <SafeAreaView style={messegestyles.container} edges={["top"]}>
+      <View style={messegestyles.header}>
+        <View style={messegestyles.headerLeft}>
+          <Feather
+            name="chevron-left"
+            size={27}
+            color="black"
+            style={messegestyles.chevronIcon}
+          />
+          <Text style={messegestyles.headerTitle}>karan_7230</Text>
+          <Feather
+            name="chevron-down"
+            size={14}
+            color="black"
+            style={messegestyles.chevronIcon}
+          />
+        </View>
+        <View style={messegestyles.headerRight}>
+          <Feather name="video" size={29} color="black" />
+          <Feather name="edit" size={26} color="black" />
+        </View>
+      </View>
+      <FlatList
+        data={user}
+        keyExtractor={(item) => item.id}
+        style={messegestyles.messagesList}
+        ListHeaderComponent={
+          <View>
+            <TouchableOpacity style={messegestyles.searchBar}>
+              <Feather name="search" size={18} color="#b5b5b5" />
+              <Text style={messegestyles.searchText}>Search</Text>
+            </TouchableOpacity>
+
+            <FlatList
+              data={user}
+              keyExtractor={(item) => item.id}
+              horizontal
+              renderItem={rendernote}
+              showsHorizontalScrollIndicator={false}
+              style={messegestyles.notesList}
+              contentContainerStyle={messegestyles.notesRow}
+              ListHeaderComponent={
+                <View
+                  style={{
+                    marginLeft: 10,
+                    alignItems: "center",
+                    width: 75,
+                    paddingTop: 18,
+                  }}
+                >
+                  <View style={{ position: "relative" }}>
+                    <Image
+                      source={require("../../assets/images/cry.png")}
+                      style={messegestyles.noteImage}
+                    />
+                    <View style={messegestyles.addNoteContainer}>
+                      <Feather name="plus" size={12} color={"white"} />
+                    </View>
+                  </View>
+                  <Text
+                    style={messegestyles.noteUsername}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    Your note
+                  </Text>
+                </View>
+              }
+            />
+
+            <View style={messegestyles.messagesHeader}>
+              <Text style={messegestyles.messagesTitle}>Messeges</Text>
+              <Text style={messegestyles.requestsText}>Requests(3)</Text>
+            </View>
+          </View>
+        }
+        renderItem={rendermessege}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 70 }}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -270,82 +351,3 @@ const messegestyles = StyleSheet.create({
     fontSize: 12,
   },
 });
-//  <View style={messegestyles.header}>
-//         <View style={messegestyles.headerLeft}>
-//           <Feather
-//             name="chevron-left"
-//             size={27}
-//             color="black"
-//             style={messegestyles.chevronIcon}
-//           />
-//           <Text style={messegestyles.headerTitle}>karan_7230</Text>
-//           <Feather
-//             name="chevron-down"
-//             size={14}
-//             color="black"
-//             style={messegestyles.chevronIcon}
-//           />
-//         </View>
-//         <View style={messegestyles.headerRight}>
-//           <Feather name="video" size={29} color="black" />
-//           <Feather name="edit" size={26} color="black" />
-//         </View>
-//       </View>
-//       <FlatList
-//         data={users}
-//         keyExtractor={(item) => item.id.toLocaleString()}
-//         style={messegestyles.messagesList}
-//         ListHeaderComponent={
-//           <View>
-//             <TouchableOpacity style={messegestyles.searchBar}>
-//               <Feather name="search" size={18} color="#b5b5b5" />
-//               <Text style={messegestyles.searchText}>Search</Text>
-//             </TouchableOpacity>
-
-//             <FlatList
-//               data={users}
-//               keyExtractor={(item) => item.id.toLocaleString()}
-//               horizontal
-//               renderItem={rendernote}
-//               showsHorizontalScrollIndicator={false}
-//               style={messegestyles.notesList}
-//               contentContainerStyle={messegestyles.notesRow}
-//               ListHeaderComponent={
-//                 <View
-//                   style={{
-//                     marginLeft: 10,
-//                     alignItems: "center",
-//                     width: 75,
-//                     paddingTop: 18,
-//                   }}
-//                 >
-//                   <View style={{ position: "relative" }}>
-//                     <Image
-//                       source={require("../../assets/images/cry.png")}
-//                       style={messegestyles.noteImage}
-//                     />
-//                     <View style={messegestyles.addNoteContainer}>
-//                       <Feather name="plus" size={12} color={"white"} />
-//                     </View>
-//                   </View>
-//                   <Text
-//                     style={messegestyles.noteUsername}
-//                     numberOfLines={1}
-//                     ellipsizeMode="tail"
-//                   >
-//                     Your note
-//                   </Text>
-//                 </View>
-//               }
-//             />
-
-//             <View style={messegestyles.messagesHeader}>
-//               <Text style={messegestyles.messagesTitle}>Messeges</Text>
-//               <Text style={messegestyles.requestsText}>Requests(3)</Text>
-//             </View>
-//           </View>
-//          }
-//         renderItem={rendermessege}
-//         showsHorizontalScrollIndicator={false}
-//         contentContainerStyle={{ paddingBottom: 70 }}
-//       />
