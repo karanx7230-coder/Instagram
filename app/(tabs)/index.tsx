@@ -126,13 +126,13 @@ export default function Index() {
           <Image
             resizeMode="cover"
             source={{
-              uri: user.avatar_url,
+              uri: item.profiles.avatar_url,
             }}
             style={homestyles.storyimg}
           />
         </LinearGradient>
         <Text style={homestyles.usernameText} numberOfLines={1}>
-          {user.username}
+          {item.profiles.username}
         </Text>
       </Pressable>
     );

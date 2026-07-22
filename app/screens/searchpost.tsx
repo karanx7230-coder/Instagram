@@ -59,8 +59,8 @@ export default function SearchPosts() {
         currentUserId={user?.id}
         imageUrl={item.image_url}
         caption={item.caption}
-        username={user.username}
-        avatarUrl={user.avatar_url}
+        username={item.profiles.username}
+        avatarUrl={item.profiles.avatar_url}
       />
     );
   };
