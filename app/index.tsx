@@ -1,4 +1,4 @@
-import  { useEffect } from "react";
+import { useEffect } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -6,7 +6,7 @@ import { router } from "expo-router";
 export default function Index() {
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/login");
+      router.replace("/(auth)/login");
     }, 2000);
     return () => clearTimeout(timer);
   }, []);

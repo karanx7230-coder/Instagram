@@ -1,7 +1,7 @@
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Image,
@@ -20,9 +20,10 @@ type PostItemProps = {
   avatarUrl: string;
   location?: string;
   aspect?: number;
+  initialLikeCount: number;
+  initialIsLiked: boolean;
 };
-
-export default function PostItem({
+function PostItem({
   postId,
   currentUserId,
   imageUrl,
@@ -31,37 +32,11 @@ export default function PostItem({
   avatarUrl,
   location,
   aspect,
+  initialLikeCount,
+  initialIsLiked,
 }: PostItemProps) {
-  const [likeCount, setLikeCount] = useState<number>(0);
-  const [isLiked, setIsLiked] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchLikeData = async () => {
-      try {
-        const { count, error: countError } = await supabase
-          .from("likes")
-          .select("*", { count: "exact", head: true })
-          .eq("post_id", postId);
-
-        if (!countError) setLikeCount(count || 0);
-
-        const { data: userLike, error: userLikeError } = await supabase
-          .from("likes")
-          .select("id")
-          .eq("post_id", postId)
-          .eq("user_id", currentUserId)
-          .maybeSingle();
-
-        if (!userLikeError && userLike) {
-          setIsLiked(true);
-        }
-      } catch (err) {
-        console.log("Error fetching likes data:", err);
-      }
-    };
-
-    fetchLikeData();
-  }, [postId, currentUserId]);
+  const [likeCount, setLikeCount] = useState<number>(initialLikeCount);
+  const [isLiked, setIsLiked] = useState<boolean>(initialIsLiked);
 
   const handleLikeToggle = async () => {
     const originalIsLiked = isLiked;
@@ -192,6 +167,8 @@ export default function PostItem({
     </View>
   );
 }
+
+export default React.memo(PostItem);
 
 const postitemstyles = StyleSheet.create({
   postHeader: {

@@ -1,7 +1,8 @@
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -13,7 +14,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useUser } from "@/context/UserContext";
 
 type Message = {
   id: string;
@@ -23,6 +23,12 @@ type Message = {
   created_at: string;
   read_at: string | null;
 };
+
+function formatTime(isoString: string): string {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 export default function ChatScreen() {
   const { id, otherUsername } = useLocalSearchParams<{
@@ -62,7 +68,25 @@ export default function ChatScreen() {
             if (prev.find((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-        }
+          if (user && newMsg.sender_id !== user.id) {
+            markAsRead(user.id);
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${id}`,
+        },
+        (payload) => {
+          const updatedMsg = payload.new as Message;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m)),
+          );
+        },
       )
       .subscribe();
 
@@ -126,13 +150,63 @@ export default function ChatScreen() {
       return;
     }
 
-    setMessages((prev) => prev.map((m) => (m.id === tempId ? (data as Message) : m)));
+    setMessages((prev) => {
+      const withoutDuplicates = prev.filter(
+        (m) => m.id !== tempId && m.id !== (data as Message).id,
+      );
+      return [...withoutDuplicates, data as Message].sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+    });
 
-    await supabase
+    const { error: convoUpdateError } = await supabase
       .from("conversations")
       .update({ last_message: body, last_message_at: nowIso })
       .eq("id", id);
+
+    if (convoUpdateError) {
+      console.log("conversation update failed:", convoUpdateError);
+    }
   };
+
+  const renderItem = useCallback(
+    ({ item }: { item: Message }) => {
+      const isMe = item.sender_id === user?.id;
+      return (
+        <View
+          style={[
+            chatStyles.messageRow,
+            { justifyContent: isMe ? "flex-end" : "flex-start" },
+          ]}
+        >
+          <View
+            style={[
+              chatStyles.bubble,
+              isMe ? chatStyles.bubbleMe : chatStyles.bubbleOther,
+            ]}
+          >
+            <Text style={{ color: isMe ? "#fff" : "#000" }}>{item.text}</Text>
+             <Text style={chatStyles.timeText}>
+              {formatTime(item.created_at)}
+            </Text>
+          </View>
+          <View style={chatStyles.metaRow}>
+           
+            {isMe && (
+              <Feather
+                name={item.read_at ? "check-circle" : "check"}
+                size={12}
+                color={item.read_at ? "#0095f6" : "#8e8e8e"}
+                style={{ marginLeft: 3 }}
+              />
+            )}
+          </View>
+        </View>
+      );
+    },
+    [user?.id],
+  );
 
   return (
     <SafeAreaView style={chatStyles.container} edges={["top"]}>
@@ -154,21 +228,10 @@ export default function ChatScreen() {
           data={messages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 10 }}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          renderItem={({ item }) => {
-            const isMe = item.sender_id === user?.id;
-            return (
-              <View
-                style={[
-                  chatStyles.bubble,
-                  isMe ? chatStyles.bubbleMe : chatStyles.bubbleOther,
-                ]}
-              >
-                <Text style={{ color: isMe ? "#fff" : "#000" }}>{item.text}</Text>
-                {isMe && item.read_at && <Text style={chatStyles.seenText}>Seen</Text>}
-              </View>
-            );
-          }}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+          renderItem={renderItem}
         />
 
         <View style={chatStyles.inputRow}>
@@ -199,21 +262,32 @@ const chatStyles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   headerTitle: { fontSize: 18, fontWeight: "bold" },
+  messageRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginVertical: 4,
+  },
   bubble: {
     padding: 10,
     borderRadius: 16,
-    marginVertical: 4,
-    maxWidth: "75%",
+    maxWidth: "70%",
   },
   bubbleMe: {
     backgroundColor: "#0095f6",
-    alignSelf: "flex-end",
   },
   bubbleOther: {
     backgroundColor: "#f0f0f0",
-    alignSelf: "flex-start",
   },
-  seenText: { fontSize: 10, color: "#dbeeff", marginTop: 2, textAlign: "right" },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  timeText: {
+    alignSelf:"flex-end",
+    fontSize: 10,
+    color: "#f8f7f7",
+  },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",

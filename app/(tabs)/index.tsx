@@ -5,8 +5,9 @@ import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -17,7 +18,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 type Post = {
   id: string;
   image_url: string;
@@ -29,6 +29,7 @@ type Post = {
     username: string;
     avatar_url: string;
   };
+  likes: { count: number }[];
 };
 type User = {
   id: string;
@@ -46,10 +47,10 @@ type story = {
   };
 };
 export default function Index() {
-  // AB ISSE REPLACE KARO
   const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [story, setStory] = useState<story | any>([]);
 
   useEffect(() => {
@@ -66,42 +67,54 @@ export default function Index() {
         const { data: allPosts, error } = await supabase
           .from("posts")
           .select(
-            "id, image_url, caption, location, user_id,aspect_ratio, profiles(username, avatar_url)",
+            "id, image_url, caption, location, user_id, aspect_ratio, profiles(username, avatar_url), likes(count)",
           )
           .order("created_at", { ascending: false });
 
+        const { data: userLikes, error: userLikesError } = await supabase
+          .from("likes")
+          .select("post_id")
+          .eq("user_id", user?.id);
+
+        if (!userLikesError && userLikes) {
+          setLikedPostIds(new Set(userLikes.map((l) => l.post_id)));
+        }
+
         if (error) {
           console.log("posts fetch error", error);
+          Alert.alert("heloo error agya he ");
         } else {
           setPosts((allPosts as any) ?? []);
         }
       } catch (error) {
-        console.log("erroror a gyaaa ", error);
+        console.log("overall fetch error", error);
+        Alert.alert("heloo error agya he ");
       } finally {
         setLoading(false);
       }
     };
+    if (user?.id) {
+      fetchdata();
+    }
+  }, [user?.id]);
 
-    fetchdata();
-  }, []);
-  if (loading || userLoading || !user) {
-    return <Homeloading />;
-  }
-  const renderPost = ({ item }: { item: Post }) => {
+  const renderPost = useCallback(({ item }: { item: Post }) => {
     return (
       <PostItem
         postId={item.id}
-        currentUserId={user.id}
+        currentUserId={user?.id ?? ""}
         imageUrl={item.image_url}
         caption={item.caption}
         username={item.profiles.username}
         avatarUrl={item.profiles.avatar_url}
         location={item.location}
         aspect={item.aspect_ratio}
+        initialLikeCount={item.likes?.[0]?.count ?? 0}
+        initialIsLiked={likedPostIds.has(item.id)}
       />
-    );
-  };
-  const renderStoryItem = ({ item }: { item: story }) => {
+    );  
+  }, [user?.id, likedPostIds]);
+  const renderStoryItem = useCallback(({ item }: { item: story }) => {
     return (
       <Pressable
         onPress={() => {
@@ -136,7 +149,10 @@ export default function Index() {
         </Text>
       </Pressable>
     );
-  };
+  }, []);
+  if (loading || userLoading || !user) {
+    return <Homeloading />;
+  }
   return (
     <SafeAreaView style={homestyles.view} edges={["top"]}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
@@ -166,12 +182,6 @@ export default function Index() {
                   style={homestyles.storyContainer}
                   onPress={() => router.navigate("/screens/addstory")}
                 >
-                  {/* <LinearGradient
-                    colors={["#833ab4", "#e1306c", "#fcb045"]}
-                    style={homestyles.gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  > */}
                   <View style={{ marginTop: 5 }}>
                     <Image
                       resizeMode="contain"
@@ -182,7 +192,6 @@ export default function Index() {
                       <Feather name="plus" size={12} color="white" />
                     </View>
                   </View>
-                  {/* </LinearGradient> */}
                   <Text style={homestyles.usernameText} numberOfLines={1}>
                     your story
                   </Text>

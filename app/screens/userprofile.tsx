@@ -138,6 +138,27 @@ export default function UserProfile() {
     }
   };
 
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => (
+      <Pressable
+        style={{ width: "33%", margin: 1 }}
+        onPress={() => {
+          router.push({
+            pathname: "/screens/posts",
+            params: { userId: userId, postId: item.id },
+          });
+        }}
+      >
+        <Image
+          source={{ uri: item.image_url }}
+          resizeMode="cover"
+          style={profilestyles.gridImage}
+        />
+      </Pressable>
+    ),
+    [userId]
+  );
+
   if (loading || userLoading || !currentUser) {
     return <ProfileLoading />;
   }
@@ -311,23 +332,7 @@ export default function UserProfile() {
           data={activeTab === "posts" ? posts : []}
           numColumns={3}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Pressable
-              style={{ width: "33%", margin: 1 }}
-              onPress={() => {
-                router.push({
-                  pathname: "/screens/posts",
-                  params: { userId: userId, postId: item.id },
-                });
-              }}
-            >
-              <Image
-                source={{ uri: item.image_url }}
-                resizeMode="cover"
-                style={profilestyles.gridImage}
-              />
-            </Pressable>
-          )}
+          renderItem={renderItem}
         />
       </View>
     </SafeAreaView>

@@ -6,14 +6,12 @@ export default function ProfileLoading() {
     <SafeAreaView style={styles.view}>
       <StatusBar barStyle={"dark-content"} backgroundColor={"white"} />
 
-      {/* Top nav: back, username, menu */}
       <View style={styles.topNav}>
         <View style={styles.iconimg} />
         <View style={styles.usernameHeader} />
         <View style={styles.iconimg} />
       </View>
 
-      {/* Avatar + stats row */}
       <View style={styles.avatarStatsRow}>
         <View style={styles.avatarImage} />
         <View style={styles.statsColumn}>
@@ -35,16 +33,13 @@ export default function ProfileLoading() {
         </View>
       </View>
 
-      {/* Bio lines */}
       <View style={styles.bioContainer}>
         <View style={styles.bioLine} />
         <View style={[styles.bioLine, { width: "50%" }]} />
       </View>
 
-      {/* Edit profile button */}
       <View style={styles.editProfileButton} />
 
-      {/* Highlights row */}
       <View style={styles.storiesRow}>
         <View style={styles.highlightItem}>
           <View style={styles.highlightCircle} />
@@ -64,7 +59,6 @@ export default function ProfileLoading() {
         </View>
       </View>
 
-      {/* Tabs row */}
       <View style={styles.tabsRow}>
         <View style={styles.tabButton}>
           <View style={styles.tabIcon} />
@@ -74,7 +68,6 @@ export default function ProfileLoading() {
         </View>
       </View>
 
-      {/* Post grid */}
       <View style={styles.gridRow}>
         <View style={styles.gridImage} />
         <View style={styles.gridImage} />

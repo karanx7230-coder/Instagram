@@ -1,7 +1,5 @@
-import { supabase } from "@/services/supabase";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Text, View } from "react-native";
+import {  Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Story() {
@@ -11,37 +9,6 @@ export default function Story() {
     username: string;
     profileimg: string;
   }>();
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStoryData = async () => {
-      try {
-        setLoading(true);
-
-        await supabase
-          .from("profiles")
-
-          .select("username, full_name, bio, avatar_url")
-          .eq("id", id)
-          .single();
-      } catch (error) {
-        console.log("Error fetching story data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStoryData();
-  }, [id]);
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size={"large"} color={"blue"} />
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
       <Image

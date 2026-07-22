@@ -1,5 +1,4 @@
 import { useUser } from "@/context/UserContext";
-import { supabase } from "@/services/supabase";
 import { Tabs } from "expo-router";
 import { Image, StyleSheet } from "react-native";
 
@@ -41,7 +40,7 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
-        name="messeges"
+        name="messages"
         options={{
           tabBarIcon: ({ focused }) => (
             <Image

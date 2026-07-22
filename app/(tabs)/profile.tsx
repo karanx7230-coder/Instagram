@@ -5,7 +5,7 @@ import { useUser } from "@/context/UserContext";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   Image,
@@ -79,6 +79,27 @@ export default function Profile() {
     fetchdata();
   }, [user]);
   // AB ISSE REPLACE KARO
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => (
+      <Pressable
+        style={{ width: "33%", margin: 1 }}
+        onPress={() => {
+          router.push({
+            pathname: "/screens/posts",
+            params: { userId: user?.id, postId: item.id },
+          });
+        }}
+      >
+        <Image
+          source={{ uri: item.image_url }}
+          resizeMode="cover"
+          style={profilestyles.gridImage}
+        />
+      </Pressable>
+    ),
+    [user?.id]
+  );
+
   if (loading || userLoading || !user) {
     return <ProfileLoading />;
   }
@@ -256,23 +277,7 @@ export default function Profile() {
           data={activeTab === "posts" ? posts : []}
           numColumns={3}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Pressable
-              style={{ width: "33%", margin: 1 }}
-              onPress={() => {
-                router.push({
-                  pathname: "/screens/posts",
-                  params: { userId: user.id, postId: item.id },
-                });
-              }}
-            >
-              <Image
-                source={{ uri: item.image_url }}
-                resizeMode="cover"
-                style={profilestyles.gridImage}
-              />
-            </Pressable>
-          )}
+          renderItem={renderItem}
         />
       </View>
     </SafeAreaView>

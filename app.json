@@ -4,7 +4,7 @@
     "slug": "Instagram",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/instagram.png",
+    "icon": "./assets/images/appicon.png",
     "scheme": "instagram",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -31,7 +31,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/instagram.png",
-          "imageWidth": 100,
+          "imageWidth": 150,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
