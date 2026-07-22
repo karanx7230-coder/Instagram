@@ -9,10 +9,12 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
+import { useUser } from "@/context/UserContext";
 
 export default function AddHighlight() {
   const [aspect, setAspect] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { user } = useUser();
 
   const pickImage = async () => {
     const permissionResult =
@@ -48,11 +50,8 @@ export default function AddHighlight() {
     try {
       setHighlight(true);
 
-      const { data: userData, error: authError } =
-        await supabase.auth.getUser();
-      if (authError || !userData.user)
-        throw authError || new Error("You must be logged in");
-      const uid = userData.user.id;
+      if (!user) throw new Error("You must be logged in");
+      const uid = user.id;
 
       const response = await fetch(selectedImage);
       if (!response.ok) throw new Error("Failed to read local image file");

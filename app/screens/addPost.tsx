@@ -12,12 +12,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useUser } from "@/context/UserContext";
 
 export default function Addpost() {
   const [location, setLocation] = useState("");
   const [caption, setCaption] = useState("");
   const [aspect, setAspect] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { user } = useUser();
 
   const pickImage = async () => {
     const permissionResult =
@@ -51,8 +53,7 @@ export default function Addpost() {
     }
     setPosting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
+      const uid = user?.id;
 
       if (!uid) {
         alert("You must be logged in");

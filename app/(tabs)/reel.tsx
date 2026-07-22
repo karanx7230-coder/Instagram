@@ -1,9 +1,13 @@
 import Reelloading from "@/Components/Skeletons/reelLoading";
 import { supabase } from "@/services/supabase";
 import { useEffect, useState } from "react";
-import { Dimensions, FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Dimensions, FlatList, StatusBar, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import ReelItem from "../screens/reelitem";
+import { useUser } from "@/context/UserContext";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 type Post = {
@@ -18,27 +22,19 @@ type Post = {
     avatar_url: string;
   };
 };
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-};
 
 export default function Reel() {
   const [posts, setPosts] = useState<Post | any>([]);
-  const [user, setUser] = useState<User | any>([]);
+  const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
-  const tabBarHeight = 60;
-
+  const TAB_BAR_HEIGHT = 38;
+  const insets = useSafeAreaInsets();
+  const ITEM_HEIGHT =
+    SCREEN_HEIGHT - insets.top - insets.bottom - TAB_BAR_HEIGHT;
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const { data } = await supabase.auth.getUser();
-        const userresponse = data.user;
-        setUser(userresponse);
         const { data: userPosts, error } = await supabase
           .from("posts")
           .select(
@@ -61,10 +57,9 @@ export default function Reel() {
     fetchAllData();
   }, []);
 
-  if (loading) {
+  if (loading || userLoading || !user) {
     return <Reelloading />;
   }
-
   const renderreel = ({ item }: { item: Post }) => {
     return (
       <ReelItem
@@ -76,26 +71,28 @@ export default function Reel() {
         avatarUrl={item.profiles?.avatar_url}
         location={item.location}
         aspect={item.aspect_ratio}
+        itemHeight={ITEM_HEIGHT}
       />
     );
   };
   return (
-    <SafeAreaView style={{ height: SCREEN_HEIGHT - tabBarHeight }}>
+    <SafeAreaView edges={["top"]} style={{ height: SCREEN_HEIGHT }}>
+      <StatusBar barStyle={"light-content"} backgroundColor={"black"} />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderreel}
         showsVerticalScrollIndicator={false}
-        snapToInterval={SCREEN_HEIGHT - tabBarHeight}
-        snapToAlignment="end"
+        snapToInterval={ITEM_HEIGHT}
         decelerationRate="fast"
         disableIntervalMomentum={true}
         getItemLayout={(_, index) => ({
-          length: SCREEN_HEIGHT - tabBarHeight,
-          offset: (SCREEN_HEIGHT - tabBarHeight) * index,
+          length: ITEM_HEIGHT,
+          offset: ITEM_HEIGHT * index,
           index,
         })}
       />
+      <View style={{ height: 60 }} />
     </SafeAreaView>
   );
 }

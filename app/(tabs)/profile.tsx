@@ -1,6 +1,7 @@
 import { Back, Menu } from "@/Components/navibtns";
 import ProfileLoading from "@/Components/Skeletons/profileLoading";
 import { supabase } from "@/services/supabase";
+import { useUser } from "@/context/UserContext";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -37,31 +38,30 @@ type highlight = {
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
   const [posts, setPosts] = useState<Post[]>([]);
-  const [user, setUser] = useState<User | any>([]);
-  const [highlight, setHighlight] = useState<highlight[]>([]);
+  // AB ISSE REPLACE KARO
+  const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
+  const [highlight, setHighlight] = useState<highlight[]>([]);
+  // AB ISSE REPLACE KARO
   useEffect(() => {
+    if (!user) return; // context load hone ka wait karo
+
     const fetchdata = async () => {
       try {
         setLoading(true);
-        const { data } = await supabase.auth.getUser();
-        const userresponse = data.user;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username, full_name, bio, avatar_url")
-          .eq("id", userresponse?.id)
-          .single();
+
         const { data: Highlight } = await supabase
           .from("highlight")
           .select("image_url,id")
-          .eq("user_id", userresponse?.id)
+          .eq("user_id", user.id)
           .order("created_at");
 
         setHighlight((Highlight as any) ?? []);
+
         const { data: userPosts, error } = await supabase
           .from("posts")
           .select("id, image_url")
-          .eq("user_id", userresponse?.id)
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
         if (error) {
@@ -69,14 +69,6 @@ export default function Profile() {
         } else {
           setPosts(userPosts ?? []);
         }
-
-        setUser({
-          ...userresponse,
-          username: profile?.username,
-          name: profile?.full_name,
-          bio: profile?.bio,
-          avatar_url: profile?.avatar_url,
-        });
       } catch (error) {
         console.log("error", error);
       } finally {
@@ -85,8 +77,9 @@ export default function Profile() {
     };
 
     fetchdata();
-  }, []);
-  if (loading) {
+  }, [user]);
+  // AB ISSE REPLACE KARO
+  if (loading || userLoading || !user) {
     return <ProfileLoading />;
   }
   return (
@@ -131,12 +124,12 @@ export default function Profile() {
                         marginLeft: 20,
                       }}
                     >
-                      {user?.name}
+                      {user?.full_name}
                     </Text>
                     <View style={profilestyles.statsRow}>
                       <View>
-                        <Text>59</Text>
-                        <Text>followers</Text>
+                        <Text>{posts?.length}</Text>
+                        <Text>post</Text>
                       </View>
                       <View>
                         <Text>59</Text>
@@ -144,7 +137,7 @@ export default function Profile() {
                       </View>
                       <View>
                         <Text>59</Text>
-                        <Text>followers</Text>
+                        <Text>following</Text>
                       </View>
                     </View>
                   </View>

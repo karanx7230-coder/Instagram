@@ -1,40 +1,10 @@
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { Tabs } from "expo-router";
-import { useEffect, useState } from "react";
 import { Image, StyleSheet } from "react-native";
-type You = {
-  id: string;
-  avatar_url: string;
-};
+
 export default function RootLayout() {
-  const [you, setYou] = useState<You | any>([]);
-
-  useEffect(() => {
-    const fetchuser = async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        const userresponse = data.user;
-
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username, full_name, bio, avatar_url")
-          .eq("id", userresponse?.id)
-          .single();
-
-        setYou({
-          ...userresponse,
-          username: profile?.username,
-          name: profile?.full_name,
-          bio: profile?.bio,
-          avatar_url: profile?.avatar_url,
-        });
-      } catch (error) {
-        console.log("error", error);
-      }
-    };
-
-    fetchuser();
-  }, []);
+  const { user } = useUser();
   return (
     <Tabs
       screenOptions={{
@@ -43,11 +13,8 @@ export default function RootLayout() {
         tabBarShowLabel: false,
 
         tabBarStyle: {
-          backgroundColor: "#ffffff",
           height: 60,
-          borderTopWidth: 0.4,
-          borderTopColor: "#d9d9d9",
-          paddingTop: 8,
+          backgroundColor: "#ffffff",
         },
       }}
     >
@@ -102,8 +69,8 @@ export default function RootLayout() {
           tabBarIcon: ({ focused }) => (
             <Image
               source={
-                you.avatar_url
-                  ? { uri: you.avatar_url }
+                user?.avatar_url
+                  ? { uri: user.avatar_url }
                   : require("../../assets/images/cry.png")
               }
               style={[

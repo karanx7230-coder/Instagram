@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useUser } from "@/context/UserContext";
 
 type Profile = {
   id: string;
@@ -45,16 +46,14 @@ export default function UserProfile() {
   // follow state
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { user: currentUser, loading: userLoading } = useUser();
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
     try {
       setLoading(true);
 
-      const { data: authData } = await supabase.auth.getUser();
-      const myId = authData.user?.id ?? null;
-      setCurrentUserId(myId);
+      const myId = currentUser?.id ?? null;
 
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
@@ -107,28 +106,28 @@ export default function UserProfile() {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, currentUser]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleFollowToggle = async () => {
-    if (!currentUserId || !userId) return;
+    if (!currentUser?.id || !userId) return;
     setFollowLoading(true);
     try {
       if (isFollowing) {
         const { error } = await supabase
           .from("follows")
           .delete()
-          .eq("follower_id", currentUserId)
+          .eq("follower_id", currentUser.id)
           .eq("following_id", userId);
 
         if (!error) setIsFollowing(false);
       } else {
         const { error } = await supabase
           .from("follows")
-          .insert({ follower_id: currentUserId, following_id: userId });
+          .insert({ follower_id: currentUser.id, following_id: userId });
 
         if (!error) setIsFollowing(true);
       }
@@ -139,7 +138,7 @@ export default function UserProfile() {
     }
   };
 
-  if (loading) {
+  if (loading || userLoading || !currentUser) {
     return <ProfileLoading />;
   }
 
@@ -189,16 +188,16 @@ export default function UserProfile() {
                     </Text>
                     <View style={profilestyles.statsRow}>
                       <View>
+                        <Text>{posts?.length}</Text>
+                        <Text>post</Text>
+                      </View>
+                      <View>
                         <Text>59</Text>
                         <Text>followers</Text>
                       </View>
                       <View>
                         <Text>59</Text>
                         <Text>following</Text>
-                      </View>
-                      <View>
-                        <Text>{posts.length}</Text>
-                        <Text>posts</Text>
                       </View>
                     </View>
                   </View>

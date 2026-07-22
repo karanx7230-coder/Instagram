@@ -4,15 +4,8 @@ import { supabase } from "@/services/supabase";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { useUser } from "@/context/UserContext";
 
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-  avatar_url: string;
-};
 type Post = {
   id: string;
   image_url: string;
@@ -24,22 +17,16 @@ type Post = {
     avatar_url: string;
   };
 };
+
 export default function SearchPosts() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [user, setUser] = useState<User | any>([]);
+  const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchdata = async () => {
       setLoading(true);
       try {
-        const { data } = await supabase.auth.getUser();
-        const userresponse = data.user;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username, full_name, bio, avatar_url")
-          .eq("id", userresponse?.id)
-          .single();
         const { data: allPosts, error } = await supabase
           .from("posts")
           .select(
@@ -52,13 +39,6 @@ export default function SearchPosts() {
         } else {
           setPosts((allPosts as any) ?? []);
         }
-        setUser({
-          ...userresponse,
-          username: profile?.username,
-          name: profile?.full_name,
-          bio: profile?.bio,
-          avatar_url: profile?.avatar_url,
-        });
       } catch (error) {
         console.log(error);
       } finally {
@@ -68,7 +48,8 @@ export default function SearchPosts() {
 
     fetchdata();
   }, []);
-  if (loading) {
+
+  if (loading || userLoading || !user) {
     return <Postloading />;
   }
   const renderPost = ({ item }: { item: Post }) => {

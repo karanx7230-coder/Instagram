@@ -1,3 +1,4 @@
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -21,37 +22,89 @@ type User = {
   bio: string;
   avatar_url: string;
 };
-
 export default function Messseges() {
-  const [user, setUser] = useState<User | any>([]);
+  const { user, loading: userLoading } = useUser();
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    const fetchuser = async () => {
-      setLoading(true);
-      try {
-        await supabase.auth.getUser();
-        const { data: profileres } = await supabase
-          .from("profiles")
-          .select("id, username, full_name, bio, avatar_url");
+// AB ISSE REPLACE KARO
+useEffect(() => {
+  if (!user) return; // context abhi load nahi hua, wait karo
 
-        setUser(profileres);
-      } catch (error) {
-        console.log("failed", error);
-      } finally {
-        setLoading(false);
+  const init = async () => {
+    setLoading(true);
+    try {
+      setCurrentUserId(user.id);
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, bio, avatar_url")
+        .neq("id", user.id);
+
+      if (error) {
+        console.log("fetch users failed", error);
+        return;
       }
-    };
+      setUsers(data as User[]);
+    } catch (error) {
+      console.log("failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  init();
+}, [user]);
+  const openOrCreateChat = async (otherUser: User) => {
+    if (!currentUserId) return;
 
-    fetchuser();
-  }, []);
+    const [u1, u2] = [currentUserId, otherUser.id].sort();
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size={"large"} color={"blue"} />
-      </View>
-    );
-  }
+    const { data: existing, error: findErr } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("user1_id", u1)
+      .eq("user2_id", u2)
+      .maybeSingle();
+
+    if (findErr) {
+      console.log("check conversation failed", findErr);
+      return;
+    }
+
+    if (existing) {
+      router.push({
+        pathname: "/chat/[id]",
+        params: { id: existing.id, otherUsername: otherUser.username },
+      });
+      return;
+    }
+
+    const { data: newConvo, error: createErr } = await supabase
+      .from("conversations")
+      .insert({ user1_id: u1, user2_id: u2 })
+      .select("id")
+      .single();
+
+    if (createErr) {
+      console.log("create conversation failed", createErr);
+      return;
+    }
+
+    router.push({
+      pathname: "/chat/[id]",
+      params: { id: newConvo.id, otherUsername: otherUser.username },
+    });
+  };
+
+ // AB ISSE REPLACE KARO
+if (loading || userLoading || !user) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size={"large"} color={"blue"} />
+    </View>
+  );
+}
+
   const rendernote = ({ item }: { item: User }) => {
     return (
       <View style={{ alignItems: "center", width: 75, paddingTop: 18 }}>
@@ -66,11 +119,15 @@ export default function Messseges() {
     );
   };
 
+  // rendermessege mein
   const rendermessege = ({ item }: { item: User }) => {
     return (
-      <TouchableOpacity onPress={() => {}} style={messegestyles.messageRow}>
+      <TouchableOpacity
+        onPress={() => openOrCreateChat(item)}
+        style={messegestyles.messageRow}
+      >
         <View style={messegestyles.messageLeft}>
-          <TouchableOpacity onPress={() => router.back}>
+          <TouchableOpacity onPress={() => openOrCreateChat(item)}>
             <Image
               source={{ uri: item.avatar_url }}
               style={messegestyles.messageAvatar}
@@ -78,13 +135,16 @@ export default function Messseges() {
           </TouchableOpacity>
           <View>
             <Text style={messegestyles.messageUsername}>{item.username}</Text>
-            <Text style={messegestyles.messageActiveTime}>active time ago</Text>
+            <Text style={messegestyles.messageActiveTime}>
+              {item.full_name}
+            </Text>
           </View>
         </View>
         <Feather name="camera" size={28} color="#4d4d4d" />
       </TouchableOpacity>
     );
   };
+
   return (
     <SafeAreaView style={messegestyles.container} edges={["top"]}>
       <View style={messegestyles.header}>
@@ -109,7 +169,7 @@ export default function Messseges() {
         </View>
       </View>
       <FlatList
-        data={user}
+        data={users}
         keyExtractor={(item) => item.id}
         style={messegestyles.messagesList}
         ListHeaderComponent={
@@ -120,7 +180,7 @@ export default function Messseges() {
             </TouchableOpacity>
 
             <FlatList
-              data={user}
+              data={users}
               keyExtractor={(item) => item.id}
               horizontal
               renderItem={rendernote}
@@ -138,7 +198,7 @@ export default function Messseges() {
                 >
                   <View style={{ position: "relative" }}>
                     <Image
-                      source={require("../../assets/images/cry.png")}
+                      source={{ uri: user.avatar_url }}
                       style={messegestyles.noteImage}
                     />
                     <View style={messegestyles.addNoteContainer}>
@@ -164,6 +224,11 @@ export default function Messseges() {
         }
         renderItem={rendermessege}
         showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ padding: 20, alignItems: "center" }}>
+            <Text style={{ color: "#777" }}>No chats yet. Start one!</Text>
+          </View>
+        }
         contentContainerStyle={{ paddingBottom: 70 }}
       />
     </SafeAreaView>
@@ -349,5 +414,6 @@ const messegestyles = StyleSheet.create({
     color: "#000000",
     marginLeft: 10,
     fontSize: 12,
+    maxWidth: 220,
   },
 });

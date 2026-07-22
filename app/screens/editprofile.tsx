@@ -16,17 +16,12 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useUser } from "@/context/UserContext";
+
 type inputprops = TextInputProps & {
   placeholder: string;
 };
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-  avatar_url: string;
-};
+
 const Input = ({ placeholder, ...props }: inputprops) => {
   return (
     <TextInput
@@ -37,176 +32,23 @@ const Input = ({ placeholder, ...props }: inputprops) => {
   );
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export default function EditPost() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [user, setUser] = useState<User | any>([]);
+  const { user, refreshUser } = useUser();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data: authData, error: authError } =
-          await supabase.auth.getUser();
-        if (authError) throw authError;
-        const authUser = authData.user;
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("full_name, bio, avatar_url")
-          .eq("id", authUser.id)
-          .single();
-
-        if (error) throw error;
-        setUser({
-          id: authUser.id,
-          email: authUser.email,
-        });
-        setName(data.full_name ?? "");
-        setBio(data.bio ?? "");
-        setAvatarUrl(data.avatar_url ?? null);
-      } catch (error) {
-        console.log("fetch profile error:", error);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+    if (user) {
+      setName(user.full_name ?? "");
+      setBio(user.bio ?? "");
+      setAvatarUrl(user.avatar_url ?? null);
+    }
+  }, [user]);
 
   const pickAndUploadImage = async () => {
+    if (!user) return;
     try {
       const permission =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -252,6 +94,7 @@ export default function EditPost() {
       if (updateError) throw updateError;
 
       setAvatarUrl(newAvatarUrl);
+      await refreshUser();
     } catch (error) {
       console.log("upload error:", error);
     } finally {
@@ -260,12 +103,14 @@ export default function EditPost() {
   };
 
   const handleedit = async () => {
+    if (!user) return;
     try {
       const { error } = await supabase
         .from("profiles")
         .update({ full_name: name, bio })
         .eq("id", user.id);
       if (error) throw error;
+      await refreshUser();
       router.navigate("/(tabs)/profile");
     } catch (error) {
       console.log(error);

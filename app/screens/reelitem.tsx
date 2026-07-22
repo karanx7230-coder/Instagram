@@ -1,5 +1,6 @@
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
+import { getTabBarHeight } from "expo-router/build/react-navigation/bottom-tabs/views/BottomTabBar";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -22,6 +23,7 @@ type ReelItemProps = {
   avatarUrl: string;
   location?: string;
   aspect?: number;
+  itemHeight: number;
 };
 
 export default function ReelItem({
@@ -32,12 +34,12 @@ export default function ReelItem({
   username,
   avatarUrl,
   location,
-  aspect,
+  // aspect,
+  itemHeight,
 }: ReelItemProps) {
-  const tabBarHeight = 60;
   const [likeCount, setLikeCount] = useState<number>(0);
   const [isLiked, setIsLiked] = useState<boolean>(false);
-
+  const tabheight = getTabBarHeight;
   useEffect(() => {
     const fetchLikeData = async () => {
       try {
@@ -100,7 +102,7 @@ export default function ReelItem({
       source={{
         uri: imageUrl,
       }}
-      style={[styles.page, { height: SCREEN_HEIGHT - tabBarHeight }]}
+      style={[styles.page, { height: itemHeight }]}
     >
       <View style={styles.sideIcons}>
         <TouchableOpacity onPress={handleLikeToggle}>
@@ -158,11 +160,10 @@ export default function ReelItem({
             <Text style={styles.followText}>Follow</Text>
           </TouchableOpacity>
         </View>
-        <Text numberOfLines={2} style={styles.caption}></Text>
-        <Text style={styles.viewsText}>
-          64views
+        <Text numberOfLines={2} style={styles.caption}>
           {caption}
         </Text>
+        {location ? <Text style={styles.viewsText}>{location}</Text> : null}
       </View>
     </ImageBackground>
   );

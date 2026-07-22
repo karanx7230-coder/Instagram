@@ -5,7 +5,7 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 const tabBarHeight = 60;
 export default function Reelloading() {
   return (
-    <SafeAreaView style={{ height: SCREEN_HEIGHT }}>
+    <SafeAreaView style={{ height: SCREEN_HEIGHT-40 }}>
       <StatusBar barStyle={"light-content"} backgroundColor={"black"} />
       <View style={[styles.page, { height: SCREEN_HEIGHT - tabBarHeight }]}>
         <View style={styles.sideIcons}>

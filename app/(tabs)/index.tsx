@@ -1,5 +1,6 @@
 import PostItem from "@/app/screens/postItem";
 import Homeloading from "@/Components/Skeletons/feedloading";
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -45,22 +46,16 @@ type story = {
   };
 };
 export default function Index() {
+  // AB ISSE REPLACE KARO
+  const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [user, setUser] = useState<User | any>([]);
   const [story, setStory] = useState<story | any>([]);
 
   useEffect(() => {
     const fetchdata = async () => {
       setLoading(true);
       try {
-        const { data } = await supabase.auth.getUser();
-        const userresponse = data.user;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username, full_name, bio, avatar_url")
-          .eq("id", userresponse?.id)
-          .single();
         const { data: story, error: errorstory } = await supabase
           .from("story")
           .select("image_url,id,profiles(username, avatar_url)")
@@ -80,13 +75,6 @@ export default function Index() {
         } else {
           setPosts((allPosts as any) ?? []);
         }
-        setUser({
-          ...userresponse,
-          username: profile?.username,
-          name: profile?.full_name,
-          bio: profile?.bio,
-          avatar_url: profile?.avatar_url,
-        });
       } catch (error) {
         console.log("erroror a gyaaa ", error);
       } finally {
@@ -96,19 +84,18 @@ export default function Index() {
 
     fetchdata();
   }, []);
-
-  if (loading) {
+  if (loading || userLoading || !user) {
     return <Homeloading />;
   }
   const renderPost = ({ item }: { item: Post }) => {
     return (
       <PostItem
         postId={item.id}
-        currentUserId={user?.id}
+        currentUserId={user.id}
         imageUrl={item.image_url}
         caption={item.caption}
-        username={item.profiles?.username}
-        avatarUrl={item.profiles?.avatar_url}
+        username={item.profiles.username}
+        avatarUrl={item.profiles.avatar_url}
         location={item.location}
         aspect={item.aspect_ratio}
       />
@@ -139,13 +126,13 @@ export default function Index() {
           <Image
             resizeMode="cover"
             source={{
-              uri: item.profiles.avatar_url,
+              uri: user.avatar_url,
             }}
             style={homestyles.storyimg}
           />
         </LinearGradient>
         <Text style={homestyles.usernameText} numberOfLines={1}>
-          {item.profiles.username}
+          {user.username}
         </Text>
       </Pressable>
     );
@@ -214,7 +201,7 @@ export default function Index() {
         renderItem={renderPost}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 70 }}
+        contentContainerStyle={{ paddingBottom: 10 }}
       />
     </SafeAreaView>
   );
