@@ -1,7 +1,7 @@
 import { Back, Menu } from "@/Components/navibtns";
 import ProfileLoading from "@/Components/Skeletons/profileLoading";
-import { supabase } from "@/services/supabase";
 import { useUser } from "@/context/UserContext";
+import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -97,7 +97,7 @@ export default function Profile() {
         />
       </Pressable>
     ),
-    [user?.id]
+    [user?.id],
   );
 
   if (loading || userLoading || !user) {
@@ -130,7 +130,7 @@ export default function Profile() {
                       source={
                         user.avatar_url
                           ? { uri: user.avatar_url }
-                          : require("../../assets/images/cry.png")
+                          : require("../../assets/images/cry_fixed.png")
                       }
                       style={profilestyles.avatarImage}
                       resizeMode="contain"

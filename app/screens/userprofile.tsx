@@ -1,5 +1,6 @@
 import { Back, Menu } from "@/Components/navibtns";
 import ProfileLoading from "@/Components/Skeletons/profileLoading";
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -15,7 +16,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useUser } from "@/context/UserContext";
 
 type Profile = {
   id: string;
@@ -156,7 +156,7 @@ export default function UserProfile() {
         />
       </Pressable>
     ),
-    [userId]
+    [userId],
   );
 
   if (loading || userLoading || !currentUser) {
@@ -190,7 +190,7 @@ export default function UserProfile() {
                       source={
                         profile?.avatar_url
                           ? { uri: profile.avatar_url }
-                          : require("../../assets/images/cry.png")
+                          : require("../../assets/images/cry_fixed.png")
                       }
                       style={profilestyles.avatarImage}
                       resizeMode="cover"

@@ -1,9 +1,9 @@
 import PostItem from "@/app/screens/postItem";
 import Postloading from "@/Components/Skeletons/postLoading";
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { useUser } from "@/context/UserContext";
 import { FlatList } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -97,8 +97,7 @@ export default function Posts() {
     fetchdata();
   }, [userId, postId]);
 
- 
- const renderPost = useCallback(
+  const renderPost = useCallback(
     ({ item }: { item: Post }) => {
       return (
         <PostItem
@@ -115,9 +114,9 @@ export default function Posts() {
         />
       );
     },
-    [currentUser?.id, likedPostIds]
+    [currentUser?.id, likedPostIds],
   );
-   if (loading) {
+  if (loading) {
     return <Postloading />;
   }
   return (

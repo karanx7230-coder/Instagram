@@ -1,3 +1,4 @@
+import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
@@ -16,7 +17,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useUser } from "@/context/UserContext";
 
 type inputprops = TextInputProps & {
   placeholder: string;
@@ -138,7 +138,7 @@ export default function EditPost() {
               source={
                 avatarUrl
                   ? { uri: avatarUrl }
-                  : require("../../assets/images/cry.png")
+                  : require("../../assets/images/cry_fixed.png")
               }
             />
             <TouchableOpacity onPress={pickAndUploadImage} disabled={uploading}>
@@ -163,27 +163,15 @@ export default function EditPost() {
           </TouchableOpacity>
           <View style={editprofilestyle.row}>
             <Text style={editprofilestyle.label}>Email</Text>
-            <Input
-              
-              
-              placeholder="email"
-            />
+            <Input placeholder="email" />
           </View>
           <View style={editprofilestyle.row}>
             <Text style={editprofilestyle.label}>Phone</Text>
-            <Input
-              
-              
-              placeholder="phone"
-            />
+            <Input placeholder="phone" />
           </View>
           <View style={editprofilestyle.row}>
             <Text style={editprofilestyle.label}>Gender</Text>
-            <Input
-              
-              
-              placeholder="gender"
-            />
+            <Input placeholder="gender" />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -70,7 +70,7 @@ export default function RootLayout() {
               source={
                 user?.avatar_url
                   ? { uri: user.avatar_url }
-                  : require("../../assets/images/cry.png")
+                  : require("../../assets/images/cry_fixed.png")
               }
               style={[
                 style.img,
