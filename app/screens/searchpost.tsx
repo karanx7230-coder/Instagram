@@ -59,15 +59,12 @@ export default function SearchPosts() {
     fetchdata();
   }, []);
 
-  if (loading || userLoading || !user) {
-    return <Postloading />;
-  }
   const renderPost = useCallback(
     ({ item }: { item: Post }) => {
       return (
         <PostItem
           postId={item.id}
-          currentUserId={user.id}
+          currentUserId={user?.id ?? ""}
           imageUrl={item.image_url}
           caption={item.caption}
           username={item.profiles.username}
@@ -79,8 +76,12 @@ export default function SearchPosts() {
         />
       );
     },
-    [user.id, likedPostIds],
+    [user?.id, likedPostIds],
   );
+
+  if (loading || userLoading || !user) {
+    return <Postloading />;
+  }
   return (
     <View style={{ backgroundColor: "white", flex: 1 }}>
       <FlatList

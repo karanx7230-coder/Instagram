@@ -1,17 +1,7 @@
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Dimensions,
-  Image,
-  ImageBackground,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-const SCREEN_HEIGHT = Dimensions.get("window").height;
+import { useEffect, useState } from "react";
+import { Alert, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type ReelItemProps = {
   postId: string;
@@ -31,9 +21,9 @@ export default function ReelItem({
   imageUrl,
   caption,
         username,
-        avatarUrl,
-        location,
-        itemHeight,
+  avatarUrl,
+  location,
+  itemHeight,
 }: ReelItemProps) {
   const [likeCount, setLikeCount] = useState<number>(0);
   const [isLiked, setIsLiked] = useState<boolean>(false);
@@ -165,8 +155,6 @@ export default function ReelItem({
     </ImageBackground>
   );
 }
-
-export default React.memo(ReelItem);
 
 const styles = StyleSheet.create({
   page: {

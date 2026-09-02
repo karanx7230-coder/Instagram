@@ -57,24 +57,28 @@ export default function Reel() {
     fetchAllData();
   }, []);
 
+  const renderreel = useCallback(
+    ({ item }: { item: Post }) => {
+      return (
+        <ReelItem
+          postId={item.id}
+          currentUserId={user?.id}
+          imageUrl={item.image_url}
+          caption={item.caption}
+          username={item.profiles?.username}
+          avatarUrl={item.profiles?.avatar_url}
+          location={item.location}
+          aspect={item.aspect_ratio}
+          itemHeight={ITEM_HEIGHT}
+        />
+      );
+    },
+    [user?.id, ITEM_HEIGHT],
+  );
+
   if (loading || userLoading || !user) {
     return <Reelloading />;
   }
-  const renderreel = useCallback(({ item }: { item: Post }) => {
-    return (
-      <ReelItem
-        postId={item.id}
-        currentUserId={user?.id}
-        imageUrl={item.image_url}
-        caption={item.caption}
-        username={item.profiles?.username}
-        avatarUrl={item.profiles?.avatar_url}
-        location={item.location}
-        aspect={item.aspect_ratio}
-        itemHeight={ITEM_HEIGHT}
-      />
-    );
-  }, [user?.id, ITEM_HEIGHT]);
   return (
     <SafeAreaView edges={["top"]} style={{ height: SCREEN_HEIGHT }}>
       <StatusBar barStyle={"light-content"} backgroundColor={"black"} />

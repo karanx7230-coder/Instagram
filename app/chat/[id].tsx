@@ -95,7 +95,7 @@ export default function ChatScreen() {
     };
   }, [id]);
 
-  const fetchMessages = async () => {
+  async function fetchMessages() {
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -108,16 +108,16 @@ export default function ChatScreen() {
       return;
     }
     setMessages(data as Message[]);
-  };
+  }
 
-  const markAsRead = async (uid: string) => {
+  async function markAsRead(uid: string) {
     await supabase
       .from("messages")
       .update({ read_at: new Date().toISOString() })
       .eq("conversation_id", id)
       .neq("sender_id", uid)
       .is("read_at", null);
-  };
+  }
 
   const sendMessage = async () => {
     if (!text.trim() || !user) return;

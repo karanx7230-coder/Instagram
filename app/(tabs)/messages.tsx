@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
