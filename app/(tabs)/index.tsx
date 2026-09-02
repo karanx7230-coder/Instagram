@@ -5,7 +5,7 @@ import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -150,6 +150,8 @@ export default function Index() {
       </Pressable>
     );
   }, []);
+
+  const storyKeyExtractor = useCallback((item: story) => item.id, []);
   if (loading || userLoading || !user) {
     return <Homeloading />;
   }
@@ -198,11 +200,15 @@ export default function Index() {
                 </TouchableOpacity>
               }
               data={story}
-              keyExtractor={(item) => item.id}
+              keyExtractor={storyKeyExtractor}
               renderItem={renderStoryItem}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={homestyles.row}
+              initialNumToRender={7}
+              maxToRenderPerBatch={7}
+              windowSize={5}
+              removeClippedSubviews
             />
           </View>
         }
@@ -211,6 +217,15 @@ export default function Index() {
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 10 }}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
+        getItemLayout={(_, index) => ({
+          length: 500,
+          offset: 500 * index,
+          index,
+        })}
       />
     </SafeAreaView>
   );

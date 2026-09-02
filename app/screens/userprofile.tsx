@@ -333,6 +333,10 @@ export default function UserProfile() {
           numColumns={3}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          initialNumToRender={9}
+          maxToRenderPerBatch={9}
+          windowSize={11}
+          removeClippedSubviews
         />
       </View>
     </SafeAreaView>

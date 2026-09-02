@@ -5,7 +5,7 @@ import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -38,11 +38,9 @@ type highlight = {
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"posts" | "mentions">("posts");
   const [posts, setPosts] = useState<Post[]>([]);
-  // AB ISSE REPLACE KARO
   const { user, loading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
   const [highlight, setHighlight] = useState<highlight[]>([]);
-  // AB ISSE REPLACE KARO
   useEffect(() => {
     if (!user) return; // context load hone ka wait karo
 
@@ -78,7 +76,8 @@ export default function Profile() {
 
     fetchdata();
   }, [user]);
-  // AB ISSE REPLACE KARO
+
+  const postCount = useMemo(() => posts.length, [posts.length]);
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <Pressable
@@ -149,7 +148,7 @@ export default function Profile() {
                     </Text>
                     <View style={profilestyles.statsRow}>
                       <View>
-                        <Text>{posts?.length}</Text>
+                        <Text>{postCount}</Text>
                         <Text>post</Text>
                       </View>
                       <View>
@@ -278,6 +277,10 @@ export default function Profile() {
           numColumns={3}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          initialNumToRender={9}
+          maxToRenderPerBatch={9}
+          windowSize={11}
+          removeClippedSubviews
         />
       </View>
     </SafeAreaView>

@@ -1,7 +1,6 @@
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
-import { getTabBarHeight } from "expo-router/build/react-navigation/bottom-tabs/views/BottomTabBar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -31,15 +30,13 @@ export default function ReelItem({
   currentUserId,
   imageUrl,
   caption,
-  username,
-  avatarUrl,
-  location,
-  // aspect,
-  itemHeight,
+        username,
+        avatarUrl,
+        location,
+        itemHeight,
 }: ReelItemProps) {
   const [likeCount, setLikeCount] = useState<number>(0);
   const [isLiked, setIsLiked] = useState<boolean>(false);
-  const tabheight = getTabBarHeight;
   useEffect(() => {
     const fetchLikeData = async () => {
       try {
@@ -168,6 +165,8 @@ export default function ReelItem({
     </ImageBackground>
   );
 }
+
+export default React.memo(ReelItem);
 
 const styles = StyleSheet.create({
   page: {

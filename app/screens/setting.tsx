@@ -16,7 +16,7 @@ type SettingsOption = {
   onPress: () => void;
 };
 
-const SettingsOptions = ({ icon, label, onPress }: SettingsOption) => {
+const SettingsOptions = React.memo(({ icon, label, onPress }: SettingsOption) => {
   return (
     <TouchableOpacity style={styles.row} onPress={onPress}>
       <View style={styles.rowLeft}>
@@ -31,7 +31,7 @@ const SettingsOptions = ({ icon, label, onPress }: SettingsOption) => {
       <Feather name="chevron-right" size={16} color="#bbb" />
     </TouchableOpacity>
   );
-};
+});
 
 export default function Settings() {
   const [isPrivate, setIsPrivate] = React.useState(false);

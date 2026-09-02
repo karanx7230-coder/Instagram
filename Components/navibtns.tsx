@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
+import React from "react";
 import { Pressable } from "react-native";
 
-export const Back = () => {
+export const Back = React.memo(() => {
   return (
     <Pressable
       style={{
@@ -18,8 +19,8 @@ export const Back = () => {
       <Feather name="arrow-left" size={24} color="black" />
     </Pressable>
   );
-};
-export const Menu = () => {
+});
+export const Menu = React.memo(() => {
   return (
     <Pressable
       onPress={() => router.push("/screens/setting")}
@@ -35,4 +36,4 @@ export const Menu = () => {
       <Feather name="menu" size={25} color="black" />
     </Pressable>
   );
-};
+});

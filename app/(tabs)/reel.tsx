@@ -1,6 +1,6 @@
 import Reelloading from "@/Components/Skeletons/reelLoading";
 import { supabase } from "@/services/supabase";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Dimensions, FlatList, StatusBar, View } from "react-native";
 import {
   SafeAreaView,
@@ -60,7 +60,7 @@ export default function Reel() {
   if (loading || userLoading || !user) {
     return <Reelloading />;
   }
-  const renderreel = ({ item }: { item: Post }) => {
+  const renderreel = useCallback(({ item }: { item: Post }) => {
     return (
       <ReelItem
         postId={item.id}
@@ -74,7 +74,7 @@ export default function Reel() {
         itemHeight={ITEM_HEIGHT}
       />
     );
-  };
+  }, [user?.id, ITEM_HEIGHT]);
   return (
     <SafeAreaView edges={["top"]} style={{ height: SCREEN_HEIGHT }}>
       <StatusBar barStyle={"light-content"} backgroundColor={"black"} />
@@ -86,6 +86,10 @@ export default function Reel() {
         snapToInterval={ITEM_HEIGHT}
         decelerationRate="fast"
         disableIntervalMomentum={true}
+        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        windowSize={5}
+        removeClippedSubviews
         getItemLayout={(_, index) => ({
           length: ITEM_HEIGHT,
           offset: ITEM_HEIGHT * index,

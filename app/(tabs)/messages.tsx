@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -349,6 +348,10 @@ export default function Messseges() {
         }
         renderItem={rendermessege}
         showsHorizontalScrollIndicator={false}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={11}
+        removeClippedSubviews
         ListEmptyComponent={
           <View style={{ padding: 20, alignItems: "center" }}>
             <Text style={{ color: "#777" }}>No chats yet. Start one!</Text>

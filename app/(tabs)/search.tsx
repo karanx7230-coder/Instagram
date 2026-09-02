@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabase";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -56,7 +56,7 @@ export default function Search() {
     fetchImages();
   }, []);
 
-  const renderPosts = ({ item }: { item: Post }) => {
+  const renderPosts = useCallback(({ item }: { item: Post }) => {
     return (
       <Pressable
         onPress={() => {
@@ -75,7 +75,7 @@ export default function Search() {
         />
       </Pressable>
     );
-  };
+  }, []);
 
   return (
     <SafeAreaView style={searchStyle.container} edges={["top"]}>
@@ -100,6 +100,7 @@ export default function Search() {
           numColumns={3}
           initialNumToRender={12}
           maxToRenderPerBatch={12}
+          windowSize={11}
           removeClippedSubviews
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 70 }}

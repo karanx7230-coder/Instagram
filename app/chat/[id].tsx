@@ -232,6 +232,10 @@ export default function ChatScreen() {
             flatListRef.current?.scrollToEnd({ animated: true })
           }
           renderItem={renderItem}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={11}
+          removeClippedSubviews
         />
 
         <View style={chatStyles.inputRow}>

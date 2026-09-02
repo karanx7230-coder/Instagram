@@ -1,7 +1,7 @@
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -77,7 +77,7 @@ export default function SearchUser() {
     setSearched(false);
   };
 
-  const renderItem = ({ item }: { item: Profile }) => {
+  const renderItem = useCallback(({ item }: { item: Profile }) => {
     return (
       <TouchableOpacity
         style={searchstyles.resultRow}
@@ -98,7 +98,7 @@ export default function SearchUser() {
         </View>
       </TouchableOpacity>
     );
-  };
+  }, []);
 
   return (
     <SafeAreaView style={searchstyles.container} edges={["top"]}>
@@ -136,6 +136,10 @@ export default function SearchUser() {
           renderItem={renderItem}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 70 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={11}
+          removeClippedSubviews
           ListEmptyComponent={
             searched ? (
               <View style={searchstyles.centered}>

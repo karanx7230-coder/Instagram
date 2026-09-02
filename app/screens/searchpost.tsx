@@ -87,6 +87,10 @@ export default function SearchPosts() {
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
       />
     </View>
   );

@@ -125,6 +125,10 @@ export default function Posts() {
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
       />
     </SafeAreaView>
   );
