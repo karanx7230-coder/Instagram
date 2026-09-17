@@ -41,6 +41,33 @@ export default function ChatScreen() {
   const { user } = useUser();
   const flatListRef = useRef<FlatList>(null);
 
+  const fetchMessages = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true })
+      .limit(50);
+
+    if (error) {
+      console.log("fetch messages failed", error);
+      return;
+    }
+    setMessages(data as Message[]);
+  }, [id]);
+
+  const markAsRead = useCallback(
+    async (uid: string) => {
+      await supabase
+        .from("messages")
+        .update({ read_at: new Date().toISOString() })
+        .eq("conversation_id", id)
+        .neq("sender_id", uid)
+        .is("read_at", null);
+    },
+    [id],
+  );
+
   useEffect(() => {
     if (!user) return;
     const init = async () => {
@@ -48,7 +75,7 @@ export default function ChatScreen() {
       await markAsRead(user.id);
     };
     init();
-  }, [id, user]);
+  }, [id, user, fetchMessages, markAsRead]);
 
   useEffect(() => {
     if (!id) return;
@@ -93,31 +120,7 @@ export default function ChatScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id]);
-
-  async function fetchMessages() {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true })
-      .limit(50);
-
-    if (error) {
-      console.log("fetch messages failed", error);
-      return;
-    }
-    setMessages(data as Message[]);
-  }
-
-  async function markAsRead(uid: string) {
-    await supabase
-      .from("messages")
-      .update({ read_at: new Date().toISOString() })
-      .eq("conversation_id", id)
-      .neq("sender_id", uid)
-      .is("read_at", null);
-  }
+  }, [id, markAsRead, user]);
 
   const sendMessage = async () => {
     if (!text.trim() || !user) return;

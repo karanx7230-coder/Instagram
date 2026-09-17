@@ -1,10 +1,15 @@
+import { useTheme } from "@/context/ThemeContext";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Homeloading() {
+  const { theme } = useTheme();
   return (
-    <SafeAreaView style={styles.view}>
-      <StatusBar barStyle={"dark-content"} backgroundColor={"white"} />
+    <SafeAreaView style={[styles.view, { backgroundColor: theme.background }]}>
+      <StatusBar
+        barStyle={theme.statusBar}
+        backgroundColor={theme.background}
+      />
       <View style={styles.toprow}>
         <View style={styles.iconimg} />
         <View style={styles.logo} />

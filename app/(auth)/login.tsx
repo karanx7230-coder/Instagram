@@ -1,9 +1,9 @@
-import { supabase } from "@/services/supabase";
+import { signInWithEmail } from "@/services/auth";
+import { isValidEmail } from "@/utils/validation";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -23,19 +23,26 @@ export default function Login() {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Missing fields", "Please enter email and password.");
-      return;
-    }
+    const nextEmailError = !email.trim()
+      ? "Please enter your email."
+      : !isValidEmail(email)
+        ? "Please enter a valid email address."
+        : "";
+    const nextPasswordError = !password ? "Please enter your password." : "";
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+    setServerError("");
+    if (nextEmailError || nextPasswordError) return;
+
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    const { error } = await signInWithEmail(email.trim(), password);
     setLoading(false);
     if (error) {
-      Alert.alert("Login failed", error.message);
+      setServerError(error.message);
       return;
     }
 
@@ -70,21 +77,38 @@ export default function Login() {
             placeholder="EMAIL"
             placeholderTextColor={"#b5b5b5"}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              if (emailError) setEmailError("");
+            }}
             onFocus={() => setEmailFocused(true)}
             onBlur={() => setEmailFocused(false)}
             style={[
               Loginstyle.input,
               {
-                borderColor: emailFocused ? "blue" : "#b9b9b9",
+                borderColor: emailError
+                  ? "#ed4956"
+                  : emailFocused
+                    ? "blue"
+                    : "#b9b9b9",
               },
             ]}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            accessibilityLabel="Email address"
           />
+          {emailError ? (
+            <Text style={Loginstyle.fieldError}>{emailError}</Text>
+          ) : null}
           <View
             style={[
               Loginstyle.password,
               {
-                borderColor: passwordFocused ? "blue" : "#b9b9b9",
+                borderColor: passwordError
+                  ? "#ed4956"
+                  : passwordFocused
+                    ? "blue"
+                    : "#b9b9b9",
               },
             ]}
           >
@@ -92,11 +116,15 @@ export default function Login() {
               placeholder="password"
               placeholderTextColor={"#b5b5b5"}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(value) => {
+                setPassword(value);
+                if (passwordError) setPasswordError("");
+              }}
               onFocus={() => setPasswordFocused(true)}
               onBlur={() => setPasswordFocused(false)}
               style={Loginstyle.passwordinput}
               secureTextEntry={!passwordShown}
+              accessibilityLabel="Password"
             />
             <TouchableOpacity
               style={Loginstyle.inputimgbtn}
@@ -116,7 +144,18 @@ export default function Login() {
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
-          <TouchableOpacity style={Loginstyle.loginbtn} onPress={handleLogin}>
+          {passwordError ? (
+            <Text style={Loginstyle.fieldError}>{passwordError}</Text>
+          ) : null}
+          {serverError ? (
+            <Text style={Loginstyle.fieldError}>{serverError}</Text>
+          ) : null}
+          <TouchableOpacity
+            style={Loginstyle.loginbtn}
+            onPress={handleLogin}
+            accessibilityRole="button"
+            accessibilityLabel="Log in"
+          >
             <Text style={Loginstyle.logintext}>Log in</Text>
           </TouchableOpacity>
           <View style={Loginstyle.row}>
@@ -242,5 +281,11 @@ const Loginstyle = StyleSheet.create({
   text2: {
     fontSize: 15,
     color: "#3797EF",
+  },
+  fieldError: {
+    color: "#ed4956",
+    fontSize: 13,
+    marginTop: 4,
+    alignSelf: "flex-start",
   },
 });

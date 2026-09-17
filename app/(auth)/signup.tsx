@@ -1,9 +1,14 @@
-import { supabase } from "@/services/supabase";
+import { signUpWithEmail } from "@/services/auth";
+import { createProfile, isUsernameTaken } from "@/services/users";
+import {
+  isValidEmail,
+  isValidPassword,
+  isValidUsername,
+} from "@/utils/validation";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -25,54 +30,60 @@ export default function Signup() {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
 
   async function handleSignUp() {
-    if (!email || !password || !username) {
-      Alert.alert("Missing fields", "Please fill everything in.");
-      return;
-    }
+    const nextUsernameError = !username.trim()
+      ? "Please choose a username."
+      : !isValidUsername(username)
+        ? "Usernames need 3-30 letters, numbers, dots or underscores."
+        : "";
+    const nextEmailError = !email.trim()
+      ? "Please enter your email."
+      : !isValidEmail(email)
+        ? "Please enter a valid email address."
+        : "";
+    const nextPasswordError = !isValidPassword(password)
+      ? "Password must be at least 6 characters."
+      : "";
+    setUsernameError(nextUsernameError);
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+    setServerError("");
+    if (nextUsernameError || nextEmailError || nextPasswordError) return;
+
     setLoading(true);
-
-    const { data: existing } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("username", username)
-      .maybeSingle();
-
-    if (existing) {
-      setLoading(false);
-
-      Alert.alert("Username taken", "Try another username.");
-      return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
-    if (error) {
-      setLoading(false);
-
-      Alert.alert("Signup failed", error.message);
-
-      return;
-    }
-
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({ id: data.user.id, username });
-
-      if (profileError) {
-        setLoading(false);
-
-        Alert.alert("Profile creation failed", profileError.message);
+    try {
+      if (await isUsernameTaken(username.trim())) {
+        setUsernameError("Username taken. Try another username.");
         return;
       }
-    }
 
-    setLoading(false);
-    router.replace("/(tabs)");
+      const { data, error } = await signUpWithEmail(email.trim(), password);
+      if (error) {
+        setServerError(error.message);
+        return;
+      }
+
+      if (data.user) {
+        const { error: profileError } = await createProfile(
+          data.user.id,
+          username.trim(),
+        );
+
+        if (profileError) {
+          setServerError(profileError.message);
+          return;
+        }
+      }
+
+      router.replace("/(tabs)");
+    } finally {
+      setLoading(false);
+    }
   }
   if (loading) {
     return (
@@ -102,35 +113,64 @@ export default function Signup() {
             placeholder="username"
             placeholderTextColor={"#b5b5b5"}
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(value) => {
+              setUsername(value);
+              if (usernameError) setUsernameError("");
+            }}
             onFocus={() => setUsernameFocused(true)}
             onBlur={() => setUsernameFocused(false)}
             style={[
               Loginstyle.input,
               {
-                borderColor: usernameFocused ? "blue" : "#b9b9b9",
+                borderColor: usernameError
+                  ? "#ed4956"
+                  : usernameFocused
+                    ? "blue"
+                    : "#b9b9b9",
               },
             ]}
+            autoCapitalize="none"
+            accessibilityLabel="Username"
           />
+          {usernameError ? (
+            <Text style={Loginstyle.fieldError}>{usernameError}</Text>
+          ) : null}
           <TextInput
             placeholderTextColor={"#b5b5b5"}
             placeholder="email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              if (emailError) setEmailError("");
+            }}
             onFocus={() => setEmailFocused(true)}
             onBlur={() => setEmailFocused(false)}
             style={[
               Loginstyle.input,
               {
-                borderColor: emailFocused ? "blue" : "#b9b9b9",
+                borderColor: emailError
+                  ? "#ed4956"
+                  : emailFocused
+                    ? "blue"
+                    : "#b9b9b9",
               },
             ]}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            accessibilityLabel="Email address"
           />
+          {emailError ? (
+            <Text style={Loginstyle.fieldError}>{emailError}</Text>
+          ) : null}
           <View
             style={[
               Loginstyle.password,
               {
-                borderColor: passwordFocused ? "blue" : "#b9b9b9",
+                borderColor: passwordError
+                  ? "#ed4956"
+                  : passwordFocused
+                    ? "blue"
+                    : "#b9b9b9",
               },
             ]}
           >
@@ -138,11 +178,15 @@ export default function Signup() {
               placeholderTextColor={"#b5b5b5"}
               placeholder="password"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(value) => {
+                setPassword(value);
+                if (passwordError) setPasswordError("");
+              }}
               onFocus={() => setPasswordFocused(true)}
               onBlur={() => setPasswordFocused(false)}
               style={Loginstyle.passwordinput}
               secureTextEntry={!passwordShown}
+              accessibilityLabel="Password"
             />
             <TouchableOpacity
               style={Loginstyle.inputimgbtn}
@@ -163,7 +207,18 @@ export default function Signup() {
           <Pressable>
             <Text style={Loginstyle.forget}>Forget password?</Text>
           </Pressable>
-          <TouchableOpacity style={Loginstyle.loginbtn} onPress={handleSignUp}>
+          {passwordError ? (
+            <Text style={Loginstyle.fieldError}>{passwordError}</Text>
+          ) : null}
+          {serverError ? (
+            <Text style={Loginstyle.fieldError}>{serverError}</Text>
+          ) : null}
+          <TouchableOpacity
+            style={Loginstyle.loginbtn}
+            onPress={handleSignUp}
+            accessibilityRole="button"
+            accessibilityLabel="Create account"
+          >
             <Text style={Loginstyle.logintext}>Create Account</Text>
           </TouchableOpacity>
           <View style={Loginstyle.row}>
@@ -289,5 +344,11 @@ const Loginstyle = StyleSheet.create({
   text2: {
     fontSize: 15,
     color: "#3797EF",
+  },
+  fieldError: {
+    color: "#ed4956",
+    fontSize: 13,
+    marginTop: 4,
+    alignSelf: "flex-start",
   },
 });

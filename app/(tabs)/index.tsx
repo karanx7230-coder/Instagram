@@ -1,166 +1,163 @@
-import PostItem from "@/app/screens/postItem";
-import Homeloading from "@/Components/Skeletons/feedloading";
+import { ErrorView } from "@/components/common/ErrorView";
+import PostItem from "@/components/post/PostItem";
+import Homeloading from "@/components/skeletons/FeedLoading";
+import { StoryList } from "@/components/story/StoryList";
+import { config } from "@/constants/config";
+import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
-import { supabase } from "@/services/supabase";
+import { useStories } from "@/hooks/useStories";
+import { fetchFeedPosts, fetchLikedPostIds } from "@/services/posts";
+import type { Post } from "@/types/post";
+import type { Story } from "@/types/story";
 import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   FlatList,
   Image,
-  Pressable,
   StatusBar,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-type Post = {
-  id: string;
-  image_url: string;
-  caption: string;
-  location: string;
-  user_id: string;
-  aspect_ratio: number;
-  profiles: {
-    username: string;
-    avatar_url: string;
-  };
-  likes: { count: number }[];
-};
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-};
-type story = {
-  id: string;
-  image_url: string;
-  profiles: {
-    username: string;
-    avatar_url: string;
-  };
-};
+
 export default function Index() {
   const { user, loading: userLoading } = useUser();
-  const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+  const { stories } = useStories();
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
-  const [story, setStory] = useState<story | any>([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  const hasMoreRef = useRef(true);
+  const userId = user?.id;
+
+  const loadInitial = useCallback(async () => {
+    if (!userId || busyRef.current) return;
+    busyRef.current = true;
+    try {
+      const [feed, liked] = await Promise.all([
+        fetchFeedPosts({ page: 0, pageSize: config.feedPageSize }),
+        fetchLikedPostIds(userId),
+      ]);
+      setLikedPostIds(liked);
+      setPosts(feed);
+      setPage(0);
+      hasMoreRef.current = feed.length === config.feedPageSize;
+    } catch (e) {
+      console.log("feed load failed", e);
+      setError("Couldn't load your feed. Check your connection.");
+    } finally {
+      busyRef.current = false;
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [userId]);
 
   useEffect(() => {
-    const fetchdata = async () => {
-      setLoading(true);
-      try {
-        const { data: story, error: errorstory } = await supabase
-          .from("story")
-          .select("image_url,id,profiles(username, avatar_url)")
-          .order("created_at", { ascending: false });
-        setStory(story);
-        if (errorstory) {
-        }
-        const { data: allPosts, error } = await supabase
-          .from("posts")
-          .select(
-            "id, image_url, caption, location, user_id, aspect_ratio, profiles(username, avatar_url), likes(count)",
-          )
-          .order("created_at", { ascending: false });
+    hasMoreRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount; every state update inside loadInitial happens after await
+    void loadInitial();
+  }, [loadInitial]);
 
-        const { data: userLikes, error: userLikesError } = await supabase
-          .from("likes")
-          .select("post_id")
-          .eq("user_id", user?.id);
-
-        if (!userLikesError && userLikes) {
-          setLikedPostIds(new Set(userLikes.map((l) => l.post_id)));
-        }
-
-        if (error) {
-          console.log("posts fetch error", error);
-          Alert.alert("heloo error agya he ");
-        } else {
-          setPosts((allPosts as any) ?? []);
-        }
-      } catch (error) {
-        console.log("overall fetch error", error);
-        Alert.alert("heloo error agya he ");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user?.id) {
-      fetchdata();
+  const loadMore = useCallback(async () => {
+    if (!userId || busyRef.current || !hasMoreRef.current) return;
+    busyRef.current = true;
+    setLoadingMore(true);
+    try {
+      const feed = await fetchFeedPosts({
+        page: page + 1,
+        pageSize: config.feedPageSize,
+      });
+      setPosts((prev) => [...prev, ...feed]);
+      setPage((prev) => prev + 1);
+      hasMoreRef.current = feed.length === config.feedPageSize;
+    } catch (e) {
+      console.log("feed load more failed", e);
+    } finally {
+      busyRef.current = false;
+      setLoadingMore(false);
     }
-  }, [user?.id]);
+  }, [userId, page]);
 
-  const renderPost = useCallback(({ item }: { item: Post }) => {
-    return (
-      <PostItem
-        postId={item.id}
-        currentUserId={user?.id ?? ""}
-        imageUrl={item.image_url}
-        caption={item.caption}
-        username={item.profiles.username}
-        avatarUrl={item.profiles.avatar_url}
-        location={item.location}
-        aspect={item.aspect_ratio}
-        initialLikeCount={item.likes?.[0]?.count ?? 0}
-        initialIsLiked={likedPostIds.has(item.id)}
-      />
-    );  
-  }, [user?.id, likedPostIds]);
-  const renderStoryItem = useCallback(({ item }: { item: story }) => {
-    return (
-      <Pressable
-        onPress={() => {
-          router.navigate({
-            pathname: "/(modals)/story",
-            params: {
-              image: item.image_url,
-              id: item.id,
-              username: item.profiles.username,
-              profileimg: item.profiles.avatar_url,
-            },
-          });
-        }}
-        style={homestyles.storyContainer}
-      >
-        <LinearGradient
-          colors={["#833ab4", "#e1306c", "#fcb045"]}
-          style={homestyles.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Image
-            resizeMode="cover"
-            source={{
-              uri: item.profiles.avatar_url,
-            }}
-            style={homestyles.storyimg}
-          />
-        </LinearGradient>
-        <Text style={homestyles.usernameText} numberOfLines={1}>
-          {item.profiles.username}
-        </Text>
-      </Pressable>
-    );
+  const retry = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    void loadInitial();
+  }, [loadInitial]);
+
+  const renderPost = useCallback(
+    ({ item }: { item: Post }) => {
+      return (
+        <PostItem
+          postId={item.id}
+          currentUserId={userId ?? ""}
+          imageUrl={item.image_url}
+          caption={item.caption}
+          username={item.profiles.username}
+          avatarUrl={item.profiles.avatar_url}
+          location={item.location}
+          aspect={item.aspect_ratio}
+          initialLikeCount={item.likes?.[0]?.count ?? 0}
+          initialIsLiked={likedPostIds.has(item.id)}
+        />
+      );
+    },
+    [userId, likedPostIds],
+  );
+
+  const openStory = useCallback((story: Story) => {
+    router.navigate({
+      pathname: "/(modals)/story",
+      params: {
+        image: story.image,
+        id: story.id,
+        username: story.username,
+        profileimg: story.profileImage,
+      },
+    });
   }, []);
 
-  const storyKeyExtractor = useCallback((item: story) => item.id, []);
+  const addStory = useCallback(() => {
+    router.navigate("/screens/addStory");
+  }, []);
+
   if (loading || userLoading || !user) {
     return <Homeloading />;
   }
+
+  if (error && posts.length === 0) {
+    return (
+      <SafeAreaView
+        style={[homestyles.view, { backgroundColor: theme.background }]}
+        edges={["top"]}
+      >
+        <ErrorView message={error} onRetry={retry} />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={homestyles.view} edges={["top"]}>
-      <StatusBar barStyle={"dark-content"} backgroundColor={"transparent"} />
+    <SafeAreaView
+      style={[homestyles.view, { backgroundColor: theme.background }]}
+      edges={["top"]}
+    >
+      <StatusBar
+        barStyle={theme.statusBar}
+        backgroundColor={theme.background}
+      />
       <View style={homestyles.toprow}>
-        <TouchableOpacity onPress={() => router.navigate("/screens/addPost")}>
-          <Feather name="plus" size={24} color="black" />
+        <TouchableOpacity
+          onPress={() => router.navigate("/screens/addPost")}
+          accessibilityRole="button"
+          accessibilityLabel="Create new post"
+        >
+          <Feather name="plus" size={24} color={theme.text} />
         </TouchableOpacity>
         <Image
           resizeMode="contain"
@@ -169,48 +166,22 @@ export default function Index() {
         />
 
         <TouchableOpacity
-          onPress={() => router.navigate("/screens/notification")}
+          onPress={() => router.navigate("/screens/notifications")}
+          accessibilityRole="button"
+          accessibilityLabel="Open notifications"
         >
-          <Feather name="heart" size={24} color="black" />
+          <Feather name="heart" size={24} color={theme.text} />
         </TouchableOpacity>
       </View>
 
       <FlatList
         ListHeaderComponent={
-          <View>
-            <FlatList
-              ListHeaderComponent={
-                <TouchableOpacity
-                  style={homestyles.storyContainer}
-                  onPress={() => router.navigate("/screens/addstory")}
-                >
-                  <View style={{ marginTop: 5 }}>
-                    <Image
-                      resizeMode="contain"
-                      source={{ uri: user.avatar_url }}
-                      style={homestyles.storyimg}
-                    />
-                    <View style={homestyles.plusIcon}>
-                      <Feather name="plus" size={12} color="white" />
-                    </View>
-                  </View>
-                  <Text style={homestyles.usernameText} numberOfLines={1}>
-                    your story
-                  </Text>
-                </TouchableOpacity>
-              }
-              data={story}
-              keyExtractor={storyKeyExtractor}
-              renderItem={renderStoryItem}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={homestyles.row}
-              initialNumToRender={7}
-              maxToRenderPerBatch={7}
-              windowSize={5}
-              removeClippedSubviews
-            />
-          </View>
+          <StoryList
+            stories={stories}
+            userAvatarUrl={user.avatar_url}
+            onAddStory={addStory}
+            onOpenStory={openStory}
+          />
         }
         data={posts}
         renderItem={renderPost}
@@ -221,11 +192,13 @@ export default function Index() {
         maxToRenderPerBatch={5}
         windowSize={5}
         removeClippedSubviews
-        getItemLayout={(_, index) => ({
-          length: 500,
-          offset: 500 * index,
-          index,
-        })}
+        onEndReached={() => loadMore()}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator style={{ marginVertical: 16 }} color={theme.tint} />
+          ) : null
+        }
       />
     </SafeAreaView>
   );
@@ -234,30 +207,6 @@ export default function Index() {
 const homestyles = StyleSheet.create({
   view: {
     flex: 1,
-    backgroundColor: "white",
-  },
-  row: {
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    gap: 5,
-  },
-  storyContainer: {
-    marginLeft: 6,
-    alignItems: "center",
-    width: 86,
-  },
-  storyimg: {
-    height: 80,
-    width: 80,
-    alignSelf: "center",
-    borderWidth: 2,
-    borderColor: "white",
-    backgroundColor: "white",
-    borderRadius: 40,
-  },
-  usernameText: {
-    color: "grey",
-    fontSize: 12,
   },
   toprow: {
     flexDirection: "row",
@@ -273,101 +222,5 @@ const homestyles = StyleSheet.create({
     height: 33,
     marginLeft: 25,
     alignSelf: "center",
-  },
-  postprofileimg: {
-    height: 35,
-    width: 35,
-    borderRadius: 17,
-  },
-  postbelowrow: {
-    flexDirection: "row",
-    margin: 10,
-    justifyContent: "space-between",
-  },
-  postHeader: {
-    flexDirection: "row",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  postUserInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  profileContainer: {
-    marginHorizontal: 10,
-  },
-  postUsername: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  postLocation: {
-    fontSize: 12,
-    color: "#666",
-  },
-  postImage: {
-    width: "100%",
-    height: 400,
-  },
-  likesRow: {
-    flexDirection: "row",
-    marginHorizontal: 10,
-    gap: 10,
-    alignItems: "center",
-  },
-  captionContainer: {
-    marginHorizontal: 10,
-    marginTop: 5,
-  },
-  captionText: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  gradient: {
-    height: 86,
-    width: 86,
-    borderRadius: 45,
-    padding: 3,
-  },
-  iconRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  likedByAvatar: {
-    height: 25,
-    width: 25,
-  },
-  followMoreRow: {
-    flexDirection: "row",
-  },
-  followButton: {
-    marginHorizontal: 10,
-    paddingHorizontal: 15,
-    height: 30,
-    backgroundColor: "#e9e9e9",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 5,
-  },
-  boldText: {
-    fontWeight: "bold",
-  },
-  viewsText: {
-    color: "#666",
-    marginTop: 3,
-  },
-  plusIcon: {
-    height: 22,
-    width: 22,
-    position: "absolute",
-    alignItems: "center",
-    justifyContent: "center",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "#000000",
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: "white",
   },
 });

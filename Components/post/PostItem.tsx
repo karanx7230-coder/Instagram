@@ -1,5 +1,8 @@
-import { supabase } from "@/services/supabase";
+import { useTheme } from "@/context/ThemeContext";
+import { likePost, unlikePost } from "@/services/posts";
+import type { PostItemProps } from "@/types/post";
 import { Feather } from "@expo/vector-icons";
+import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -11,18 +14,6 @@ import {
   View,
 } from "react-native";
 
-type PostItemProps = {
-  postId: string;
-  currentUserId: string;
-  imageUrl: string;
-  caption: string;
-  username: string;
-  avatarUrl: string;
-  location?: string;
-  aspect?: number;
-  initialLikeCount: number;
-  initialIsLiked: boolean;
-};
 function PostItem({
   postId,
   currentUserId,
@@ -35,6 +26,7 @@ function PostItem({
   initialLikeCount,
   initialIsLiked,
 }: PostItemProps) {
+  const { theme } = useTheme();
   const [likeCount, setLikeCount] = useState<number>(initialLikeCount);
   const [isLiked, setIsLiked] = useState<boolean>(initialIsLiked);
 
@@ -44,62 +36,63 @@ function PostItem({
     setIsLiked(!originalIsLiked);
     setLikeCount(originalIsLiked ? originalCount - 1 : originalCount + 1);
 
-    if (originalIsLiked) {
-      const { error } = await supabase
-        .from("likes")
-        .delete()
-        .eq("post_id", postId)
-        .eq("user_id", currentUserId);
+    const { error } = originalIsLiked
+      ? await unlikePost(postId, currentUserId)
+      : await likePost(postId, currentUserId);
 
-      if (error) {
-        setIsLiked(originalIsLiked);
-        setLikeCount(originalCount);
-        Alert.alert("Error", "Couldn't sync unlike action.");
-      }
-    } else {
-      const { error } = await supabase
-        .from("likes")
-        .insert({ post_id: postId, user_id: currentUserId });
-
-      if (error) {
-        setIsLiked(originalIsLiked);
-        setLikeCount(originalCount);
-        Alert.alert("Error", "Couldn't sync like action.");
-      }
+    if (error) {
+      setIsLiked(originalIsLiked);
+      setLikeCount(originalCount);
+      Alert.alert("Error", "Couldn't sync like action.");
     }
   };
 
   return (
-    <View>
+    <View style={{ backgroundColor: theme.card }}>
       <View style={postitemstyles.postHeader}>
         <View style={postitemstyles.postUserInfo}>
-          <Image
-            resizeMode="cover"
+          <ExpoImage
             source={{ uri: avatarUrl }}
             style={postitemstyles.postprofileimg}
+            contentFit="cover"
+            cachePolicy="memory-disk"
           />
-          <TouchableOpacity style={postitemstyles.profileContainer}>
-            <Text style={postitemstyles.postUsername}>{username}</Text>
-            <Text style={postitemstyles.postlocation}>{location}</Text>
+          <TouchableOpacity
+            style={postitemstyles.profileContainer}
+            accessibilityRole="button"
+            accessibilityLabel={`Open profile of ${username}`}
+          >
+            <Text style={[postitemstyles.postUsername, { color: theme.text }]}>
+              {username}
+            </Text>
+            <Text style={[postitemstyles.postlocation, { color: theme.muted }]}>
+              {location}
+            </Text>
           </TouchableOpacity>
         </View>
         <View style={postitemstyles.followMoreRow}>
-          <TouchableOpacity style={postitemstyles.followButton}>
+          <TouchableOpacity
+            style={postitemstyles.followButton}
+            accessibilityRole="button"
+            accessibilityLabel={`Follow ${username}`}
+          >
             <Text>Follow</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="More options"
+          >
             <Feather
               name="more-vertical"
               size={20}
-              color="black"
+              color={theme.text}
               style={{ top: 5 }}
             />
           </TouchableOpacity>
         </View>
       </View>
 
-      <Image
-        resizeMode="cover"
+      <ExpoImage
         source={{ uri: imageUrl }}
         style={[
           postitemstyles.postImage,
@@ -108,11 +101,18 @@ function PostItem({
             height: undefined,
           },
         ]}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        recyclingKey={postId}
       />
 
       <View style={postitemstyles.postbelowrow}>
         <View style={postitemstyles.iconRow}>
-          <TouchableOpacity onPress={handleLikeToggle}>
+          <TouchableOpacity
+            onPress={handleLikeToggle}
+            accessibilityRole="button"
+            accessibilityLabel={isLiked ? "Unlike post" : "Like post"}
+          >
             {isLiked ? (
               <Image
                 resizeMode="contain"
@@ -120,7 +120,7 @@ function PostItem({
                 style={[postitemstyles.iconimg]}
               />
             ) : (
-              <Feather name="heart" size={25} />
+              <Feather name="heart" size={25} color={theme.text} />
             )}
           </TouchableOpacity>
 
@@ -131,6 +131,8 @@ function PostItem({
                 params: { userId: postId },
               });
             }}
+            accessibilityRole="button"
+            accessibilityLabel="Open comments"
           >
             <Image
               resizeMode="contain"
@@ -139,7 +141,10 @@ function PostItem({
             />
           </TouchableOpacity>
 
-          <TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Share post"
+          >
             <Image
               resizeMode="contain"
               source={require("../../assets/images/Messanger.png")}
@@ -147,19 +152,25 @@ function PostItem({
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity>
-          <Feather name="bookmark" size={24} color="black" />
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Save post"
+        >
+          <Feather name="bookmark" size={24} color={theme.text} />
         </TouchableOpacity>
       </View>
 
       <View style={postitemstyles.likesRow}>
-        <Text style={postitemstyles.likesText}>
+        <Text style={[postitemstyles.likesText, { color: theme.text }]}>
           {likeCount} {likeCount === 1 ? "like" : "likes"}
         </Text>
       </View>
 
       <View style={postitemstyles.captionContainer}>
-        <Text numberOfLines={2} style={postitemstyles.captionText}>
+        <Text
+          numberOfLines={2}
+          style={[postitemstyles.captionText, { color: theme.text }]}
+        >
           <Text style={postitemstyles.boldText}>{username}</Text>
           {caption}
         </Text>
@@ -186,6 +197,7 @@ const postitemstyles = StyleSheet.create({
     height: 35,
     width: 35,
     borderRadius: 17,
+    backgroundColor: "#e9e9e9",
   },
   profileContainer: {
     marginHorizontal: 10,
@@ -193,15 +205,14 @@ const postitemstyles = StyleSheet.create({
   postUsername: {
     fontSize: 13,
     fontWeight: "600",
-    color: "black",
   },
   postlocation: {
     fontSize: 11,
     fontWeight: "200",
-    color: "grey",
   },
   postImage: {
     width: "100%",
+    backgroundColor: "#e9e9e9",
   },
   postbelowrow: {
     flexDirection: "row",

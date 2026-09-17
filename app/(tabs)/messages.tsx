@@ -167,7 +167,7 @@ export default function Messseges() {
       supabase.removeChannel(channel);
     };
   }, [user]);
-  const openOrCreateChat = async (otherUser: User) => {
+  const openOrCreateChat = useCallback(async (otherUser: User) => {
     if (!currentUserId) return;
 
     const [u1, u2] = [currentUserId, otherUser.id].sort();
@@ -207,7 +207,7 @@ export default function Messseges() {
       pathname: "/chat/[id]",
       params: { id: newConvo.id, otherUsername: otherUser.username },
     });
-  };
+  }, [currentUserId]);
   const rendermessege = useCallback(
     ({ item }: { item: User }) => {
       return (

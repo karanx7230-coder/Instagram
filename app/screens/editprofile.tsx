@@ -3,7 +3,7 @@ import { supabase } from "@/services/supabase";
 import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -38,14 +38,16 @@ export default function EditPost() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const { user, refreshUser } = useUser();
+  const [lastSyncedUserId, setLastSyncedUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      setName(user.full_name ?? "");
-      setBio(user.bio ?? "");
-      setAvatarUrl(user.avatar_url ?? null);
-    }
-  }, [user]);
+  // Sync form fields when the async profile arrives. Render-time state
+  // adjustment (documented React pattern) instead of an effect.
+  if (user && lastSyncedUserId !== user.id) {
+    setLastSyncedUserId(user.id);
+    setName(user.full_name ?? "");
+    setBio(user.bio ?? "");
+    setAvatarUrl(user.avatar_url ?? null);
+  }
 
   const pickAndUploadImage = async () => {
     if (!user) return;

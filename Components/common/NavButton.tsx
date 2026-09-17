@@ -22,7 +22,7 @@ export const Back = () => {
 export const Menu = () => {
   return (
     <Pressable
-      onPress={() => router.push("/screens/setting")}
+      onPress={() => router.push("/screens/settings")}
       style={{
         height: 50,
         width: 50,

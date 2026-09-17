@@ -3,7 +3,7 @@ import {  Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Story() {
-  const { image, id, username, profileimg } = useLocalSearchParams<{
+  const { image, username, profileimg } = useLocalSearchParams<{
     image: string;
     id: string;
     username: string;

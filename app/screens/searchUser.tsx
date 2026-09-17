@@ -83,7 +83,7 @@ export default function SearchUser() {
         style={searchstyles.resultRow}
         onPress={() => {
           router.navigate({
-            pathname: "/screens/userprofile",
+            pathname: "/screens/userProfile",
             params: { userId: item.id },
           });
         }}

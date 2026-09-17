@@ -1,9 +1,11 @@
+import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/context/UserContext";
 import { Tabs } from "expo-router";
 import { Image, StyleSheet } from "react-native";
 
 export default function RootLayout() {
   const { user } = useUser();
+  const { theme } = useTheme();
   return (
     <Tabs
       screenOptions={{
@@ -13,13 +15,15 @@ export default function RootLayout() {
 
         tabBarStyle: {
           height: 60,
-          backgroundColor: "#ffffff",
+          backgroundColor: theme.tabBar,
+          borderTopColor: theme.border,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
+          tabBarAccessibilityLabel: "Home feed",
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Home.png")}
@@ -31,6 +35,7 @@ export default function RootLayout() {
       <Tabs.Screen
         name="reel"
         options={{
+          tabBarAccessibilityLabel: "Reels",
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/reel.png")}
@@ -42,6 +47,7 @@ export default function RootLayout() {
       <Tabs.Screen
         name="messages"
         options={{
+          tabBarAccessibilityLabel: "Messages",
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Messanger.png")}
@@ -54,6 +60,7 @@ export default function RootLayout() {
       <Tabs.Screen
         name="search"
         options={{
+          tabBarAccessibilityLabel: "Search",
           tabBarIcon: ({ focused }) => (
             <Image
               source={require("../../assets/images/Search.png")}
@@ -65,6 +72,7 @@ export default function RootLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          tabBarAccessibilityLabel: "Your profile",
           tabBarIcon: ({ focused }) => (
             <Image
               source={

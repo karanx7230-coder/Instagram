@@ -7,14 +7,14 @@ export default function ModalsLayout() {
       }}
     >
       <Stack.Screen
-        name="notification"
+        name="notifications"
         options={{
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "white" },
         }}
       />
       <Stack.Screen
-        name="setting"
+        name="settings"
         options={{
           headerTitleStyle: { fontSize: 18, fontWeight: "bold" },
           headerShadowVisible: false,
@@ -22,7 +22,7 @@ export default function ModalsLayout() {
         }}
       />
       <Stack.Screen
-        name="editprofile"
+        name="editProfile"
         options={{
           animation: "fade",
         }}
@@ -36,7 +36,7 @@ export default function ModalsLayout() {
           headerStyle: { backgroundColor: "white" },
         }}
       />
-      <Stack.Screen name="userprofile" />
+      <Stack.Screen name="userProfile" />
 
       <Stack.Screen
         name="addHighlight"
@@ -46,7 +46,7 @@ export default function ModalsLayout() {
         }}
       />
       <Stack.Screen
-        name="addstory"
+        name="addStory"
         options={{
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "white" },

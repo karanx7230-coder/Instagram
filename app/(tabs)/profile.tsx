@@ -1,5 +1,5 @@
-import { Back, Menu } from "@/Components/navibtns";
-import ProfileLoading from "@/Components/Skeletons/profileLoading";
+import { Back, Menu } from "@/components/common/NavButton";
+import ProfileLoading from "@/components/skeletons/ProfileLoading";
 import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { Feather } from "@expo/vector-icons";
@@ -17,15 +17,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  bio: string;
-  avatar_url: string;
-};
 
 type Post = {
   id: string;
@@ -169,7 +160,7 @@ export default function Profile() {
                   style={profilestyles.editProfileButton}
                   onPress={() => {
                     router.navigate({
-                      pathname: "/screens/editprofile",
+                      pathname: "/screens/editProfile",
                       params: { userId: user.id },
                     });
                   }}

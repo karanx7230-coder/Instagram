@@ -1,5 +1,5 @@
-import { Back, Menu } from "@/Components/navibtns";
-import ProfileLoading from "@/Components/Skeletons/profileLoading";
+import { Back, Menu } from "@/components/common/NavButton";
+import ProfileLoading from "@/components/skeletons/ProfileLoading";
 import { useUser } from "@/context/UserContext";
 import { supabase } from "@/services/supabase";
 import { LinearGradient } from "expo-linear-gradient";
@@ -41,7 +41,7 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [highlight, setHighlight] = useState<Highlight[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // follow state
   const [isFollowing, setIsFollowing] = useState(false);
@@ -51,8 +51,6 @@ export default function UserProfile() {
   const fetchData = useCallback(async () => {
     if (!userId) return;
     try {
-      setLoading(true);
-
       const myId = currentUser?.id ?? null;
 
       const { data: profileData, error: profileError } = await supabase
@@ -109,6 +107,7 @@ export default function UserProfile() {
   }, [userId, currentUser]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount; every state update inside fetchData happens after await
     fetchData();
   }, [fetchData]);
 

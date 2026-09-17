@@ -1,10 +1,15 @@
+import { useTheme } from "@/context/ThemeContext";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Postloading() {
+  const { theme } = useTheme();
   return (
-    <SafeAreaView>
-      <StatusBar barStyle={"dark-content"} backgroundColor={"white"} />
+    <SafeAreaView style={{ backgroundColor: theme.background, flex: 1 }}>
+      <StatusBar
+        barStyle={theme.statusBar}
+        backgroundColor={theme.background}
+      />
       <View style={styles.divider} />
 
       <View style={styles.postHeader}>
