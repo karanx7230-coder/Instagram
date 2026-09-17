@@ -1,4 +1,5 @@
 import { ErrorView } from "@/components/common/ErrorView";
+import ReelItem from "@/components/reel/ReelItem";
 import Reelloading from "@/components/skeletons/ReelLoading";
 import { config } from "@/constants/config";
 import { useTheme } from "@/context/ThemeContext";
@@ -17,7 +18,6 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import ReelItem from "@/components/reel/ReelItem";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -41,7 +41,10 @@ export default function Reel() {
     if (busyRef.current) return;
     busyRef.current = true;
     try {
-      const reels = await fetchReels({ page: 0, pageSize: config.feedPageSize });
+      const reels = await fetchReels({
+        page: 0,
+        pageSize: config.feedPageSize,
+      });
       setPosts(reels);
       setPage(0);
       hasMoreRef.current = reels.length === config.feedPageSize;
